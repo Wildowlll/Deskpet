@@ -424,6 +424,40 @@
         <span class="set-label">💞 두 캐릭터의 관계 <small>(없으면 호감도 기반 자동 설정)</small></span>
         <textarea class="set-input" id="set-relation" rows="2" placeholder="예) 소꿉친구. 티격태격하지만 사실 많이 좋아함."></textarea>
       </div>
+      <hr class="divider"/>
+      <div class="set-section">
+        <span class="set-label">🔔 알림 설정</span>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <label style="font-family:'DotGothic16',monospace;font-size:11px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="set-notify-on" style="width:15px;height:15px;cursor:pointer;accent-color:var(--brown);"/>
+            알림 켜기 (권한 요청 필요)
+          </label>
+        </div>
+        <div id="notify-detail" style="display:flex;flex-direction:column;gap:8px;">
+          <div>
+            <span class="set-label" style="font-size:10px;">알림 기준 수치: <span id="threshold-val">20</span></span>
+            <input type="range" id="set-notify-threshold" min="10" max="40" step="1" value="20"
+              style="width:100%;margin-top:4px;accent-color:var(--brown);"/>
+          </div>
+          <div>
+            <span class="set-label" style="font-size:10px;">알림 최소 간격: <span id="interval-val">10</span>분</span>
+            <input type="range" id="set-notify-interval" min="1" max="60" step="1" value="10"
+              style="width:100%;margin-top:4px;accent-color:var(--brown);"/>
+          </div>
+          <div>
+            <span class="set-label" style="font-size:10px;margin-bottom:4px;display:block;">알림 받을 스탯</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label style="font-family:'DotGothic16',monospace;font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="nstat-hunger" style="accent-color:var(--brown);"/> 🍎 밥</label>
+              <label style="font-family:'DotGothic16',monospace;font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="nstat-happy"  style="accent-color:var(--brown);"/> 😊 기분</label>
+              <label style="font-family:'DotGothic16',monospace;font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="nstat-clean"  style="accent-color:var(--brown);"/> 🛁 청결</label>
+              <label style="font-family:'DotGothic16',monospace;font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;"><input type="checkbox" id="nstat-health" style="accent-color:var(--brown);"/> ❤️ 건강</label>
+            </div>
+          </div>
+          <div id="notify-perm-warn" style="display:none;font-family:'DotGothic16',monospace;font-size:10px;color:var(--red);">
+            ⚠️ 권한이 거부됐어요. 브라우저 설정에서 알림을 허용해주세요.
+          </div>
+        </div>
+      </div>
       <button class="set-save" id="btn-save-common">💾 저장</button>
     </div>
 
@@ -491,6 +525,36 @@ const SAVE_KEY  = 'deskpet_v1';
 const IMG_KEYS  = ['deskpet_img0','deskpet_img1'];
 const LOG_KEY   = 'deskpet_log';
 const TS_KEY    = 'deskpet_ts';
+const POOL_KEY  = 'deskpet_pool';
+const POOL_MAX  = 15; // max lines per trigger per character
+
+function loadPool(){ try{ return JSON.parse(localStorage.getItem(POOL_KEY)||'{}'); }catch(e){ return {}; } }
+function savePool(p){ try{ localStorage.setItem(POOL_KEY,JSON.stringify(p)); }catch(e){} }
+
+function poolPush(ci, trigger, line){
+  const p = loadPool();
+  if(!p[ci]) p[ci]={};
+  if(!p[ci][trigger]) p[ci][trigger]=[];
+  // avoid exact duplicates
+  if(!p[ci][trigger].includes(line)){
+    p[ci][trigger].push(line);
+    if(p[ci][trigger].length > POOL_MAX) p[ci][trigger].shift();
+  }
+  savePool(p);
+}
+
+function poolPick(ci, trigger){
+  const p = loadPool();
+  const arr = p[ci]?.[trigger];
+  if(!arr||arr.length===0) return null;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function poolClear(ci){
+  const p = loadPool();
+  delete p[ci];
+  savePool(p);
+}
 
 // popup sizes per scale [w, h]
 const POPUP_SIZES = { 0.85:[262,490], 1:[308,576], 1.25:[385,720], 1.5:[462,864] };
@@ -523,7 +587,13 @@ function loadLog(){ try { return JSON.parse(localStorage.getItem(LOG_KEY)||'[]')
 function saveLog(l){ try { localStorage.setItem(LOG_KEY, JSON.stringify(l.slice(-50))); } catch(e){} }
 
 function defChar(i){ return { name:i===0?'캐릭터1':'캐릭터2', persona:'', hunger:80, happy:80, sleep:20, clean:80, health:100, asleep:false, born:Date.now(), age:0 }; }
-function defCommon(){ return { apiKey:'', relation:'', scale:1, preset:'normal', hasChar1:false, affinity:50 }; }
+function defCommon(){ return {
+  apiKey:'', relation:'', scale:1, preset:'normal', hasChar1:false, affinity:50,
+  notifyOn: false,
+  notifyThreshold: 20,
+  notifyStats: { hunger:true, happy:false, clean:false, health:true },
+  notifyIntervalMin: 10,
+}; }
 
 // ══════════════════════════════════════════════════
 //  MODE DETECT
@@ -553,19 +623,30 @@ if (MODE === 'deskpet_main') {
 // ══════════════════════════════════════════════════
 //  GEMINI
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+//  GEMINI — batch only
+// ══════════════════════════════════════════════════
 const TRIGGER_LABELS = {
   greeting:'첫 인사', feed:'밥 먹음', play:'같이 놀기', pet:'쓰다듬기',
   clean:'목욕', medicine:'약 먹음', wakeup:'잠에서 깸', idle:'혼잣말',
   hungry:'배고픔 호소', sleepy:'졸림', sick:'아픔', click:'클릭 반응', interact:'친구에게 말걸기',
 };
 
-async function geminiLine({ apiKey, me, other, relation, trigger }) {
+async function geminiBatch({ apiKey, me, other, relation, trigger, count=10 }) {
   const mood = me.asleep?'잠자는 중':me.hunger<25?'매우 배고픔':me.happy<25?'슬프고 외로움':me.health<30?'몸이 아픔':me.sleep>80?'매우 졸림':me.happy>80?'아주 행복함':me.clean<25?'더럽고 불쾌함':'평온함';
   const otherTxt = other?`\n같이 있는 친구: "${other.name}"${other.persona?` (${other.persona})`:''}`:'' ;
   const relTxt   = (relation&&other)?`\n둘의 관계: ${relation}`:'';
-  const prompt = `너는 "${me.name}"이라는 이름의 귀여운 가상 캐릭터야.\n성격: ${me.persona||'귀엽고 활발함'}${otherTxt}${relTxt}\n현재 상태: ${mood} (밥 ${Math.round(me.hunger)}, 기분 ${Math.round(me.happy)}, 건강 ${Math.round(me.health)}, 청결 ${Math.round(me.clean)}, 나이 ${me.age}일)\n상황: ${TRIGGER_LABELS[trigger]||trigger}\n\n지금 상황과 성격에 맞는 짧은 한국어 대사 한 줄만. 이모지 1~2개, 20자 이내, 따옴표 없이 대사만.`;
+  const prompt =
+`너는 "${me.name}"이라는 이름의 귀여운 가상 캐릭터야.
+성격: ${me.persona||'귀엽고 활발함'}${otherTxt}${relTxt}
+현재 상태: ${mood} (나이 ${me.age}일)
+상황: ${TRIGGER_LABELS[trigger]||trigger}
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+이 상황에서 할 수 있는 짧은 한국어 대사를 ${count}개 만들어줘.
+조건: 각 대사는 이모지 1~2개 포함, 20자 이내, 서로 다른 느낌으로.
+출력 형식: 번호 없이 한 줄에 하나씩, 다른 텍스트 없이 대사만.`;
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({contents:[{parts:[{text:prompt}]}]}) });
 
@@ -575,19 +656,12 @@ async function geminiLine({ apiKey, me, other, relation, trigger }) {
   }
 
   const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error('배치 응답 파싱 실패');
 
-  // defensive parsing — log full response shape if unexpected
-  const candidate = data?.candidates?.[0];
-  const part = candidate?.content?.parts?.[0];
-  const text = part?.text?.trim();
-
-  if (!text) {
-    // surface what we actually got for debugging
-    const shape = JSON.stringify(data).slice(0,200);
-    throw new Error(`응답 파싱 실패: ${shape}`);
-  }
-
-  return text;
+  return text.split('\n')
+    .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim())
+    .filter(l => l.length > 0 && l.length < 40);
 }
 
 // ══════════════════════════════════════════════════
@@ -752,88 +826,93 @@ function runMain() {
   });
   document.getElementById('close-btn').addEventListener('click',()=>window.close());
 
-  // ── bubbles + AI ──
+  // ── AI system (pool-only) ──
   const bubEls=[document.getElementById('bub0'),document.getElementById('bub1')];
-  const bubTimers=[null,null], aiCd=[false,false], idleCd=[false,false];
+  const bubTimers=[null,null];
 
-  // global rate limiter — max 8 calls/min, backs off on 429
-  const AI_LOG = [];
+  // ALL triggers use pool — no real-time API calls
+  const ALL_TRIGGERS = ['idle','click','hungry','sleepy','sick','feed','play','pet','clean','medicine','wakeup','greeting','interact'];
+
+  // batch rate limiter: max 5 batch calls/min
+  const BATCH_LOG = [];
+  let batchRunning = false;
   let blockedUntil = 0;
-  function canCallAI() {
+
+  function canBatch() {
     if (Date.now() < blockedUntil) return false;
+    if (batchRunning) return false;
     const cutoff = Date.now() - 60000;
-    while (AI_LOG.length && AI_LOG[0] < cutoff) AI_LOG.shift();
-    return AI_LOG.length < 8;
+    while (BATCH_LOG.length && BATCH_LOG[0] < cutoff) BATCH_LOG.shift();
+    return BATCH_LOG.length < 5;
   }
-  function recordCall() { AI_LOG.push(Date.now()); }
 
-  // fallback lines when AI unavailable
-  const FALLBACKS = [
-    ['오늘도 같이 있어줘서 고마워요 😊','배고프다...','낮잠 자고 싶어~','뭐 하고 있어요?','히히~ 😄','...멍...','오늘 날씨 좋다!'],
-    ['심심해요 😢','같이 놀아요~','그루릉...','뭔가 먹고 싶다 🍎','졸려... 💤','보고싶었어요 💕','오늘 뭐 했어요?'],
-  ];
-  function randFallback(ci) { return FALLBACKS[ci%2][Math.floor(Math.random()*FALLBACKS[ci%2].length)]; }
+  // hardcoded fallbacks per trigger
+  const FALLBACKS = {
+    idle:     ['오늘도 같이 있어줘서 고마워요 😊','배고프다...','낮잠 자고 싶어~','뭐 하고 있어요?','히히~ 😄','오늘 날씨 좋다!'],
+    click:    ['안녕! 😊','왜 눌러요~ 😳','히히 간지러워요!','또 눌렀어요?'],
+    hungry:   ['배고파요... 🍎 밥 주세요!','꼬르륵... 😫','배고파 죽겠어요 🍎'],
+    sleepy:   ['졸려요... 💤 재워주세요~','눈이 감겨요 😴','자고 싶어요... 💤'],
+    sick:     ['몸이 안 좋아요... 💊','아파요 😢','약 주세요 💊'],
+    feed:     ['냠냠! 맛있어요 😋','감사해요 🍎','배부르다~ 😊'],
+    play:     ['같이 놀아요~ 🎾','신나요! 😄','재밌다 히히~'],
+    pet:      ['좋아요~ ✨','기분 최고! 😊','더 해줘요~'],
+    clean:    ['깨끗해졌어요! ✨','상쾌해요 🛁','감사해요~'],
+    medicine: ['쓴데... 고마워요 💊','건강해질게요!','으... 써요 😣'],
+    wakeup:   ['잘 잤어요~ ☀️','좋은 아침이에요! 😊','일어났어요~'],
+    greeting: ['안녕하세요~ 😊','반가워요! 🎉','오늘도 잘 부탁해요~'],
+    interact: ['같이 있으니 좋아요 💕','행복해요 ✨','친구가 있어서 다행이에요~'],
+  };
+  function randFallback(trigger) {
+    const arr = FALLBACKS[trigger] || FALLBACKS.idle;
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
 
-  function showBubble(ci,txt,dur=3200){
+  function showBubble(ci, txt, dur=3200){
     const b=bubEls[ci]; if(!b) return;
     b.classList.remove('thinking'); b.textContent=txt; b.classList.add('show');
     clearTimeout(bubTimers[ci]); bubTimers[ci]=setTimeout(()=>b.classList.remove('show'),dur);
   }
 
-  async function aiSpeak(ci,trigger,fallback){
-    const b=bubEls[ci];
-    const isIdle = trigger==='idle';
-    const fb = (fallback && fallback!=='...') ? fallback : randFallback(ci);
-
-    // idle has its own cooldown (doesn't block action responses)
-    if(isIdle && idleCd[ci]){ return; }
-
-    const logEntry={ci, trigger, time:Date.now(), line:null, fail:null};
-
-    if(!D.common.apiKey){
-      showBubble(ci,fb); return; // silent — no log spam when no key
-    }
-    if(!canCallAI()){
-      const waitSec = blockedUntil > Date.now() ? Math.ceil((blockedUntil-Date.now())/1000)+'초 대기 중' : '분당 호출 초과';
-      logEntry.fail=`rate limit (${waitSec})`; pushLog(logEntry);
-      showBubble(ci,fb); return;
-    }
-    if(aiCd[ci]){ showBubble(ci,fb); return; }
-
-    // set cooldowns BEFORE the await so rapid clicks don't stack
-    aiCd[ci]=true; setTimeout(()=>aiCd[ci]=false, 30000); // 30s per-char cooldown
-    if(isIdle){ idleCd[ci]=true; setTimeout(()=>idleCd[ci]=false, 60000); } // 60s idle cooldown
-    recordCall();
-
-    b.textContent='···'; b.classList.add('show','thinking');
-    try{
-      const other=charCount===2?D.chars[1-ci]:null;
-      const rel=D.common.relation||(charCount===2?getAffinityLabel(D.common.affinity)[2]:'');
-      const line=await geminiLine({apiKey:D.common.apiKey,me:D.chars[ci],other,relation:rel,trigger});
-      b.classList.remove('thinking');
-      logEntry.line=line||fb;
-      pushLog(logEntry);
-      showBubble(ci,line||fb);
-    }catch(err){
-      b.classList.remove('thinking');
-      const msg=err.message||'네트워크 오류';
-      // 429 → back off for 2 minutes
-      if(msg.includes('429')){
-        blockedUntil = Date.now() + 120000;
-        logEntry.fail=`429 할당량 초과 — 2분 대기`;
-      } else {
-        logEntry.fail=msg;
-      }
-      pushLog(logEntry);
-      showBubble(ci,fb);
-    }
-  }
-
   function pushLog(entry){
-    const log=loadLog();
-    log.push(entry);
-    saveLog(log);
+    const log=loadLog(); log.push(entry); saveLog(log);
   }
+
+  // ── batch refill ──
+  async function refillPool(ci, trigger) {
+    if (!D.common.apiKey || !canBatch()) return;
+    batchRunning = true;
+    BATCH_LOG.push(Date.now());
+    try {
+      const other = charCount===2 ? D.chars[1-ci] : null;
+      const rel   = D.common.relation||(charCount===2?getAffinityLabel(D.common.affinity)[2]:'');
+      const lines = await geminiBatch({ apiKey:D.common.apiKey, me:D.chars[ci], other, relation:rel, trigger, count:10 });
+      lines.forEach(l => poolPush(ci, trigger, l));
+      pushLog({ ci, trigger, time:Date.now(), line:`[배치 ${lines.length}개 저장됨]`, fail:null });
+    } catch(err) {
+      const msg = err.message||'배치 오류';
+      if (msg.includes('429')) blockedUntil = Date.now() + 120000;
+      pushLog({ ci, trigger, time:Date.now(), line:null, fail:`배치: ${msg}` });
+    } finally {
+      batchRunning = false;
+    }
+  }
+
+  function checkAndRefill(ci, trigger) {
+    if (!D.common.apiKey) return;
+    const p = loadPool();
+    const count = p[ci]?.[trigger]?.length || 0;
+    if (count <= 3) refillPool(ci, trigger);
+  }
+
+  // ── main speak: always pool → fallback ──
+  function aiSpeak(ci, trigger, _fallback) {
+    const pooled = poolPick(ci, trigger);
+    showBubble(ci, pooled || randFallback(trigger));
+    checkAndRefill(ci, trigger); // top up in background
+  }
+
+  // idle speak alias (same as aiSpeak)
+  function idleSpeak(ci) { aiSpeak(ci, 'idle'); }
 
   // ── particles ──
   const stage=document.getElementById('stage');
@@ -1018,16 +1097,71 @@ function runMain() {
         img.style.transform=`scaleX(${b.sx}) scaleY(${b.sy})`;
         wrap.style.transform=`translateY(${b.y+bob}px)`;
       }
-      if(!D.chars[ci].asleep&&f%(720+ci*180)===0) aiSpeak(ci,'idle',randFallback(ci));
+      if(!D.chars[ci].asleep&&f%(3600+ci*600)===0) idleSpeak(ci);
     }
     requestAnimationFrame(loop);
   })();
 
-  // greeting
+  // greeting + initial pool refill
   setTimeout(()=>{
+    // show greeting from pool (or fallback)
     const img=document.getElementById('img0');
-    if(img.src&&img.style.display!=='none')aiSpeak(0,'greeting','안녕하세요~ 😊');
+    if(img.src&&img.style.display!=='none') aiSpeak(0,'greeting');
+    // pre-fill all trigger pools in background
+    setTimeout(()=>{
+      for(let ci=0;ci<charCount;ci++){
+        ALL_TRIGGERS.forEach((t,idx)=>{
+          // stagger requests so they don't all fire at once
+          setTimeout(()=>checkAndRefill(ci,t), idx*2000);
+        });
+      }
+    }, 2000);
   },1000);
+
+  // ── notification system ──
+  const STAT_LABELS = { hunger:'🍎 밥', happy:'😊 기분', clean:'🛁 청결', health:'❤️ 건강' };
+  let lastNotifyTime = {};
+
+  function checkAndNotify() {
+    const nc = D.common;
+    if (!nc.notifyOn) return;
+    if (Notification.permission !== 'granted') return;
+    // only notify when window is hidden (minimised / background)
+    if (document.visibilityState !== 'hidden') return;
+
+    const now = Date.now();
+    const gapMs = (nc.notifyIntervalMin||10) * 60 * 1000;
+    const threshold = nc.notifyThreshold || 20;
+    const stats = nc.notifyStats || { hunger:true, health:true };
+
+    for (let ci=0; ci<charCount; ci++) {
+      const C = D.chars[ci]; if (!C || C.asleep) continue;
+      const key = `c${ci}`;
+      if (now - (lastNotifyTime[key]||0) < gapMs) continue;
+
+      const lowStats = Object.entries(stats)
+        .filter(([k,on])=> on && (C[k]??100) < threshold)
+        .map(([k])=> STAT_LABELS[k]);
+
+      if (lowStats.length === 0) continue;
+
+      lastNotifyTime[key] = now;
+      const statStr = lowStats.join(', ');
+      new Notification('🐾 데스크펫', {
+        body: `${C.name}이(가) 돌봄이 필요해요! (${statStr})`,
+        icon: localStorage.getItem(IMG_KEYS[ci]) || undefined,
+        tag: `deskpet-${ci}`,
+        silent: false,
+      });
+    }
+  }
+
+  // run check every minute
+  setInterval(checkAndNotify, 60000);
+  // also run on visibility change (tab unfocused → background)
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState==='hidden') checkAndNotify();
+  });
 }
 
 // ══════════════════════════════════════════════════
@@ -1114,19 +1248,70 @@ function runSettings(){
     setTimeout(()=>{btn.classList.remove('ok');btn.textContent=orig;},1600);
   }
 
-  // save common
+  // ── notification UI ──
+  const notifyOnEl    = document.getElementById('set-notify-on');
+  const threshEl      = document.getElementById('set-notify-threshold');
+  const threshValEl   = document.getElementById('threshold-val');
+  const intervalEl    = document.getElementById('set-notify-interval');
+  const intervalValEl = document.getElementById('interval-val');
+  const permWarn      = document.getElementById('notify-perm-warn');
+
+  // restore saved values
+  const nc = D.common;
+  notifyOnEl.checked        = nc.notifyOn||false;
+  threshEl.value            = nc.notifyThreshold||20;
+  threshValEl.textContent   = nc.notifyThreshold||20;
+  intervalEl.value          = nc.notifyIntervalMin||10;
+  intervalValEl.textContent = nc.notifyIntervalMin||10;
+  const nstats = nc.notifyStats||{hunger:true,happy:false,clean:false,health:true};
+  document.getElementById('nstat-hunger').checked = !!nstats.hunger;
+  document.getElementById('nstat-happy').checked  = !!nstats.happy;
+  document.getElementById('nstat-clean').checked  = !!nstats.clean;
+  document.getElementById('nstat-health').checked = !!nstats.health;
+
+  // live slider labels
+  threshEl.addEventListener('input',   ()=> threshValEl.textContent   = threshEl.value);
+  intervalEl.addEventListener('input', ()=> intervalValEl.textContent = intervalEl.value);
+
+  // request permission when toggled on
+  notifyOnEl.addEventListener('change', async ()=>{
+    if (!notifyOnEl.checked) return;
+    if (!('Notification' in window)) { notifyOnEl.checked=false; permWarn.style.display='block'; return; }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      notifyOnEl.checked = false;
+      permWarn.style.display = 'block';
+    } else {
+      permWarn.style.display = 'none';
+    }
+  });
+  if (typeof Notification!=='undefined' && Notification.permission==='denied')
+    permWarn.style.display='block';
+
+  // save common — now includes notification settings
   document.getElementById('btn-save-common').addEventListener('click',()=>{
-    D.common.apiKey  =document.getElementById('set-apikey').value.trim();
-    D.common.relation=document.getElementById('set-relation').value.trim();
+    D.common.apiKey            = document.getElementById('set-apikey').value.trim();
+    D.common.relation          = document.getElementById('set-relation').value.trim();
+    D.common.notifyOn          = notifyOnEl.checked;
+    D.common.notifyThreshold   = parseInt(threshEl.value);
+    D.common.notifyIntervalMin = parseInt(intervalEl.value);
+    D.common.notifyStats = {
+      hunger: document.getElementById('nstat-hunger').checked,
+      happy:  document.getElementById('nstat-happy').checked,
+      clean:  document.getElementById('nstat-clean').checked,
+      health: document.getElementById('nstat-health').checked,
+    };
     saveD(D);notifySettings();flash('btn-save-common');
   });
 
-  // save chars
+  // save chars — clear pool if persona changed
   [0,1].forEach(i=>{
     document.getElementById('btn-save'+i).addEventListener('click',()=>{
       if(!D.chars[i])D.chars[i]=defChar(i);
+      const newPersona=document.getElementById('set-persona'+i).value.trim();
+      if(newPersona !== D.chars[i].persona) poolClear(i); // persona changed → reset pool
       D.chars[i].name   =document.getElementById('set-name'+i).value.trim()||defChar(i).name;
-      D.chars[i].persona=document.getElementById('set-persona'+i).value.trim();
+      D.chars[i].persona=newPersona;
       saveD(D);notifySettings();flash('btn-save'+i);
     });
   });
