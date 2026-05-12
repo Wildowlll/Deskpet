@@ -1271,11 +1271,19 @@ function runMain() {
   }
 
   // ── diary generation — independent API call ──
+  const diaryRetryAt  = [-1, -1];
+  const diaryWriting  = [false, false]; // prevent duplicate writes
+
   async function tryGenerateDiary(ci) {
     const C = D.chars[ci];
     const today = C.age||0;
+    if (today <= 0) return; // 0일차엔 일기 안 씀
     if (!D.common.lastDiaryDay) D.common.lastDiaryDay = [-1,-1];
     if (D.common.lastDiaryDay[ci] === today) return; // already wrote today
+    if (diaryWriting[ci]) return; // already in progress
+    if (diaryRetryAt[ci] > 0 && Date.now() < diaryRetryAt[ci]) return; // 503 cooldown
+
+    diaryWriting[ci] = true;
 
     const ac = C.actionCounts||{};
     const summary = `밥 ${ac.feed||0}회, 놀기 ${ac.play||0}회, 목욕 ${ac.clean||0}회, 쓰다듬기 ${ac.pet||0}회`;
@@ -1291,12 +1299,19 @@ function runMain() {
           day: today, summary, mood: moodStr,
         }) || '';
         pushLog({ ci, trigger:'[일기]', time:Date.now(), line:diaryText||'(생성 실패)', fail:diaryText?null:'응답 없음' });
+        diaryRetryAt[ci] = -1; // 성공 시 retry 초기화
       } catch(e) {
-        pushLog({ ci, trigger:'[일기]', time:Date.now(), line:null, fail:e.message });
+        const msg = e.message||'';
+        pushLog({ ci, trigger:'[일기]', time:Date.now(), line:null, fail:msg });
+        if (msg.includes('503') || msg.includes('429')) {
+          diaryRetryAt[ci] = Date.now() + 3 * 60 * 1000;
+          diaryWriting[ci] = false;
+          return;
+        }
       }
     }
 
-    // fallback if API failed or no key
+    // fallback (API 키 없거나 503/429 외 오류일 때만)
     if (!diaryText) {
       diaryText = `오늘은 ${moodStr} 하루였어요. ${ac.feed>0?`밥을 ${ac.feed}번 먹었어요 🍎 `:''}${ac.play>0?`${ac.play}번이나 같이 놀았어요 🎾 `:''}내일도 좋은 하루가 되길 바라요 😊`;
     }
@@ -1307,6 +1322,7 @@ function runMain() {
     saveDiary(diary);
     C.actionCounts = {feed:0,play:0,clean:0,medicine:0,pet:0};
     saveD(D);
+    diaryWriting[ci] = false;
   }
 
   // check diary every minute
