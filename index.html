@@ -61,16 +61,53 @@
 /* stage */
 #stage{
   position:relative;width:100%;height:190px;
-  background:linear-gradient(180deg,#b8ddff 0%,#dff0ff 52%,#c8e6c9 52%,#a5d6a7 100%);
   overflow:hidden;
+  transition:background 8s ease;
 }
-.cloud{position:absolute;background:#fff;border-radius:20px;opacity:.8;}
+/* sky layer */
+#sky{
+  position:absolute;inset:0;
+  transition:background 8s ease;
+  z-index:0;
+}
+/* ground layer */
+#ground{
+  position:absolute;bottom:0;left:0;width:100%;height:52px;
+  transition:background 4s ease;
+  z-index:1;
+}
+/* celestial objects (moon/sun) */
+#celestial{
+  position:absolute;top:10px;right:18px;
+  font-size:20px;z-index:2;pointer-events:none;
+  transition:opacity 2s;
+}
+/* stars */
+.star{
+  position:absolute;background:white;border-radius:50%;
+  pointer-events:none;z-index:2;
+  animation:twinkle 2s infinite alternate;
+}
+@keyframes twinkle{0%{opacity:.3}100%{opacity:1}}
+
+/* season particles */
+.season-particle{
+  position:absolute;pointer-events:none;z-index:3;
+  animation:fallDown linear forwards;
+}
+@keyframes fallDown{
+  0%  {transform:translateY(-10px) rotate(0deg);   opacity:1;}
+  100%{transform:translateY(200px) rotate(360deg); opacity:0;}
+}
+
+.cloud{position:absolute;border-radius:20px;opacity:.85;z-index:3;}
 
 /* char units */
 .char-unit{
   position:absolute;bottom:16px;width:78px;height:78px;
   cursor:pointer;
   transition:left .5s cubic-bezier(.34,1.56,.64,1);
+  z-index:4;
 }
 #char0{left:36px;}
 #char1{left:186px;}
@@ -105,7 +142,7 @@
 .bubble{
   position:absolute;background:#fff;border:2px solid var(--brown);border-radius:10px;
   padding:4px 8px;font-size:9px;opacity:0;transition:opacity .3s;
-  pointer-events:none;z-index:5;font-family:'DotGothic16',monospace;
+  pointer-events:none;z-index:8;font-family:'DotGothic16',monospace;
   max-width:104px;white-space:normal;text-align:center;line-height:1.4;
 }
 #bub0{left:6px;top:6px;}
@@ -121,7 +158,7 @@
 /* interact */
 .interact-pop{
   position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);
-  font-size:20px;pointer-events:none;z-index:10;
+  font-size:20px;pointer-events:none;z-index:12;
   animation:iPop 1.4s ease-out forwards;
 }
 @keyframes iPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}30%{transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-65%) scale(1)}}
@@ -260,6 +297,52 @@
 .set-save.ok{background:var(--green)!important;}
 .divider{border:none;border-top:1.5px dashed #d4c9b0;margin:2px 0;}
 
+/* diary */
+.diary-item{background:#fff;border:1.5px solid #e0d5c0;border-radius:9px;padding:11px 13px;display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.diary-date{font-family:'DotGothic16',monospace;font-size:10px;opacity:.55;}
+.diary-body{font-family:'DotGothic16',monospace;font-size:11px;color:var(--brown);line-height:1.7;}
+
+/* achievements */
+#achv-list{display:flex;flex-direction:column;gap:6px;}
+.achv-item{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #e0d5c0;border-radius:9px;padding:9px 12px;}
+.achv-item.locked{opacity:.38;filter:grayscale(1);}
+.achv-emoji{font-size:20px;flex-shrink:0;}
+.achv-info{display:flex;flex-direction:column;gap:1px;}
+.achv-name{font-family:'DotGothic16',monospace;font-size:11px;color:var(--brown);}
+.achv-desc{font-family:'DotGothic16',monospace;font-size:9px;opacity:.55;}
+
+/* heart gauge bar */
+#heart-gauge{
+  position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  display:none;align-items:center;gap:3px;
+  font-size:12px;z-index:9;pointer-events:none;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.15));
+}
+#heart-gauge.show{display:flex;}
+.hg-heart{transition:transform .25s, filter .25s;}
+.hg-heart.filled{filter:none;}
+.hg-heart.empty{filter:grayscale(1);opacity:.35;}
+#growth-banner{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:var(--brown);color:var(--cream);
+  font-family:'DotGothic16',monospace;font-size:12px;
+  padding:10px 18px;border-radius:12px;
+  white-space:nowrap;z-index:16;pointer-events:none;
+  opacity:0;transition:opacity .3s;text-align:center;line-height:1.6;
+}
+#growth-banner.show{opacity:1;}
+
+/* confetti particle */
+.confetti{
+  position:absolute;width:7px;height:7px;border-radius:2px;
+  pointer-events:none;z-index:15;
+  animation:confettiFall linear forwards;
+}
+@keyframes confettiFall{
+  0%{opacity:1;transform:translateY(0) rotate(0deg);}
+  100%{opacity:0;transform:translateY(160px) rotate(720deg);}
+}
+
 /* log tab */
 #log-filter{display:flex;gap:7px;margin-bottom:10px;}
 .log-filter-btn{
@@ -302,8 +385,19 @@
   </div>
 
   <div id="stage">
+    <div id="sky"></div>
+    <div id="ground"></div>
+    <div id="celestial"></div>
     <div class="bubble" id="bub0"></div>
     <div class="bubble" id="bub1"></div>
+    <div id="growth-banner"></div>
+    <div id="heart-gauge">
+      <span class="hg-heart" id="hg0">❤️</span>
+      <span class="hg-heart" id="hg1">❤️</span>
+      <span class="hg-heart" id="hg2">❤️</span>
+      <span class="hg-heart" id="hg3">❤️</span>
+      <span class="hg-heart" id="hg4">❤️</span>
+    </div>
 
     <div class="char-unit" id="char0">
       <img class="char-img" id="img0" src="" style="display:none"/>
@@ -392,6 +486,8 @@
     <button class="set-tab" data-tab="c0">캐릭터1</button>
     <button class="set-tab" data-tab="c1">캐릭터2</button>
     <button class="set-tab" data-tab="log">📜 로그</button>
+    <button class="set-tab" data-tab="diary">📔 일기</button>
+    <button class="set-tab" data-tab="achv">🏆 업적</button>
   </div>
   <div class="set-body">
 
@@ -401,9 +497,9 @@
         <span class="set-label">📏 화면 크기</span>
         <div class="size-btns">
           <button class="sz-btn" data-sc="0.85">소</button>
-          <button class="sz-btn active" data-sc="1">중</button>
+          <button class="sz-btn" data-sc="1">중</button>
           <button class="sz-btn" data-sc="1.25">대</button>
-          <button class="sz-btn" data-sc="1.5">특대</button>
+          <button class="sz-btn active" data-sc="1.5">특대</button>
         </div>
       </div>
       <hr class="divider"/>
@@ -413,6 +509,15 @@
           <button class="ps-btn" data-ps="slow">🌱<br>느긋하게</button>
           <button class="ps-btn active" data-ps="normal">🌿<br>보통</button>
           <button class="ps-btn" data-ps="fast">🔥<br>빡빡하게</button>
+        </div>
+      </div>
+      <hr class="divider"/>
+      <div class="set-section">
+        <span class="set-label">📅 날짜 속도 <small>(실제 시간 기준 하루)</small></span>
+        <div class="preset-btns" id="dayspeed-btns">
+          <button class="ps-btn" data-ds="slow">🐌<br>24시간</button>
+          <button class="ps-btn" data-ds="normal">🌿<br>1시간</button>
+          <button class="ps-btn" data-ds="fast">⚡<br>10분</button>
         </div>
       </div>
       <hr class="divider"/>
@@ -514,6 +619,16 @@
       <div id="log-list"><div class="log-empty">아직 대사가 없어요</div></div>
     </div>
 
+    <!-- 일기 -->
+    <div class="tab-panel" id="panel-diary">
+      <div id="diary-list"><div class="log-empty">아직 일기가 없어요 📔</div></div>
+    </div>
+
+    <!-- 업적 -->
+    <div class="tab-panel" id="panel-achv">
+      <div id="achv-list"></div>
+    </div>
+
   </div>
 </div>
 
@@ -559,12 +674,35 @@ function poolClear(ci){
 // popup sizes per scale [w, h]
 const POPUP_SIZES = { 0.85:[262,490], 1:[308,576], 1.25:[385,720], 1.5:[462,864] };
 
-// decay presets  { interval(ms), hunger, happy, clean }
+// decay presets
 const PRESETS = {
   slow:   { interval:20000, hunger:1,   happy:0.8, clean:0.5 },
   normal: { interval:13000, hunger:2,   happy:1.5, clean:1   },
   fast:   { interval:9000,  hunger:3,   happy:2,   clean:1.5 },
 };
+
+// day speed: real ms per in-game day
+const DAY_SPEEDS = {
+  slow:   86400000, // 24h
+  normal:  3600000, // 1h  ← default
+  fast:     600000, // 10m
+};
+
+// growth stages: { id, label, emoji, minAge(days), minCare, scale }
+const GROWTH_STAGES = [
+  { id:'baby',  label:'아기',   emoji:'🥚', minAge:0,  minCare:0,   scale:0.60 },
+  { id:'child', label:'어린이', emoji:'🌱', minAge:7,  minCare:50,  scale:0.75 },
+  { id:'teen',  label:'청소년', emoji:'🌿', minAge:20, minCare:150, scale:0.90 },
+  { id:'adult', label:'어른',   emoji:'🌳', minAge:40, minCare:300, scale:1.00 },
+];
+
+function getStage(age, care) {
+  let stage = GROWTH_STAGES[0];
+  for (const s of GROWTH_STAGES) {
+    if (age >= s.minAge && care >= s.minCare) stage = s;
+  }
+  return stage;
+}
 
 // affinity labels
 const AFFINITY_LABELS = [
@@ -574,25 +712,63 @@ const AFFINITY_LABELS = [
   [61, '😄 친한 친구',  '서로 잘 챙겨주고 자주 이야기함'],
   [81, '💕 베스트프렌드','뭐든 같이하고 싶은 단짝'],
 ];
-
 function getAffinityLabel(v) {
   let r = AFFINITY_LABELS[0];
   for (const row of AFFINITY_LABELS) { if (v >= row[0]) r = row; }
   return r;
 }
 
+// achievements definition
+const ACHIEVEMENTS = [
+  { id:'first_name',    emoji:'🌱', name:'첫 만남',      desc:'캐릭터 이름을 처음 설정했어요' },
+  { id:'first_image',   emoji:'🖼️', name:'내 모습이야',  desc:'캐릭터 이미지를 업로드했어요' },
+  { id:'first_feed',    emoji:'🍎', name:'첫 밥',         desc:'처음으로 밥을 줬어요' },
+  { id:'feed_50',       emoji:'🍽️', name:'집밥의 왕',     desc:'밥을 50번 줬어요' },
+  { id:'first_play',    emoji:'🎾', name:'놀자!',         desc:'처음으로 같이 놀았어요' },
+  { id:'play_30',       emoji:'🎮', name:'놀이왕',        desc:'놀아주기 30번 달성' },
+  { id:'first_clean',   emoji:'🛁', name:'첫 목욕',       desc:'처음으로 씻겨줬어요' },
+  { id:'clean_100',     emoji:'✨', name:'청결왕',        desc:'청결 100을 달성했어요' },
+  { id:'medicine_10',   emoji:'💊', name:'건강제일',      desc:'약을 10번 줬어요' },
+  { id:'health_7days',  emoji:'❤️', name:'무적',          desc:'건강 100을 7일 유지했어요' },
+  { id:'day_7',         emoji:'🎂', name:'7일',           desc:'함께한 지 7일이 됐어요' },
+  { id:'day_30',        emoji:'🎂', name:'30일',          desc:'함께한 지 30일이 됐어요' },
+  { id:'day_100',       emoji:'🎂', name:'100일',         desc:'함께한 지 100일이 됐어요' },
+  { id:'grow_child',    emoji:'🌱', name:'첫 성장',       desc:'어린이로 성장했어요' },
+  { id:'grow_teen',     emoji:'🌿', name:'쑥쑥',          desc:'청소년으로 성장했어요' },
+  { id:'grow_adult',    emoji:'🌳', name:'다 컸어요',      desc:'어른이 됐어요' },
+  { id:'two_chars',     emoji:'👫', name:'첫 친구',       desc:'캐릭터를 2마리로 늘렸어요' },
+  { id:'affinity_80',   emoji:'💕', name:'단짝',          desc:'호감도 80을 달성했어요' },
+  { id:'affinity_100',  emoji:'💯', name:'베프',          desc:'호감도 100을 달성했어요' },
+  { id:'night_owl',     emoji:'🌙', name:'올빼미',        desc:'자정~새벽 4시에 접속했어요' },
+];
+
+const DIARY_KEY = 'deskpet_diary';
+function loadDiary(){ try{ return JSON.parse(localStorage.getItem(DIARY_KEY)||'[]'); }catch(e){ return []; } }
+function saveDiary(d){ try{ localStorage.setItem(DIARY_KEY, JSON.stringify(d.slice(-30))); }catch(e){} }
+
 function loadD()  { try { return JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'); } catch(e){ return {}; } }
 function saveD(d) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch(e){} }
 function loadLog(){ try { return JSON.parse(localStorage.getItem(LOG_KEY)||'[]'); } catch(e){ return []; } }
 function saveLog(l){ try { localStorage.setItem(LOG_KEY, JSON.stringify(l.slice(-50))); } catch(e){} }
 
-function defChar(i){ return { name:i===0?'캐릭터1':'캐릭터2', persona:'', hunger:80, happy:80, sleep:20, clean:80, health:100, asleep:false, born:Date.now(), age:0 }; }
+function defChar(i){ return {
+  name:i===0?'캐릭터1':'캐릭터2', persona:'',
+  hunger:80, happy:80, sleep:20, clean:80, health:100,
+  asleep:false, born:Date.now(), age:0,
+  care:0,          // care score for growth
+  stageId:'baby',  // current growth stage
+  actionCounts: { feed:0, play:0, clean:0, medicine:0, pet:0 },
+  healthStreak:0,  // days health=100
+}; }
+
 function defCommon(){ return {
-  apiKey:'', relation:'', scale:1, preset:'normal', hasChar1:false, affinity:50,
-  notifyOn: false,
-  notifyThreshold: 20,
-  notifyStats: { hunger:true, happy:false, clean:false, health:true },
-  notifyIntervalMin: 10,
+  apiKey:'', relation:'', scale:1.5, preset:'normal', hasChar1:false, affinity:50,
+  notifyOn:false, notifyThreshold:20,
+  notifyStats:{ hunger:true, happy:false, clean:false, health:true },
+  notifyIntervalMin:10,
+  daySpeed:'normal',        // key into DAY_SPEEDS
+  achievements:[],          // array of unlocked achievement ids
+  lastDiaryDay:[-1,-1],     // [char0 lastDay, char1 lastDay]
 }; }
 
 // ══════════════════════════════════════════════════
@@ -632,19 +808,33 @@ const TRIGGER_LABELS = {
   hungry:'배고픔 호소', sleepy:'졸림', sick:'아픔', click:'클릭 반응', interact:'친구에게 말걸기',
 };
 
-async function geminiBatch({ apiKey, me, other, relation, trigger, count=10 }) {
+async function geminiAllTriggers({ apiKey, me, other, relation, includeDiary=false, diaryContext=null }) {
   const mood = me.asleep?'잠자는 중':me.hunger<25?'매우 배고픔':me.happy<25?'슬프고 외로움':me.health<30?'몸이 아픔':me.sleep>80?'매우 졸림':me.happy>80?'아주 행복함':me.clean<25?'더럽고 불쾌함':'평온함';
   const otherTxt = other?`\n같이 있는 친구: "${other.name}"${other.persona?` (${other.persona})`:''}`:'' ;
   const relTxt   = (relation&&other)?`\n둘의 관계: ${relation}`:'';
+
+  const triggerList = Object.entries(TRIGGER_LABELS)
+    .map(([k,v]) => `"${k}": ${v}`)
+    .join('\n');
+
+  const diarySection = includeDiary && diaryContext ? `
+
+추가로 "diary" 키에 오늘 하루 일기도 써줘.
+오늘 ${diaryContext.day}일째: ${diaryContext.summary}. 전반적으로 ${diaryContext.mood}한 하루였어.
+캐릭터 시점으로 3~4문장, 한국어, 이모지 포함, 귀엽게. 날짜/제목 없이 본문만. diary는 문자열로.` : '';
+
+  const diaryKey = includeDiary ? `, "diary":"..."` : '';
+
   const prompt =
 `너는 "${me.name}"이라는 이름의 귀여운 가상 캐릭터야.
 성격: ${me.persona||'귀엽고 활발함'}${otherTxt}${relTxt}
 현재 상태: ${mood} (나이 ${me.age}일)
-상황: ${TRIGGER_LABELS[trigger]||trigger}
 
-이 상황에서 할 수 있는 짧은 한국어 대사를 ${count}개 만들어줘.
-조건: 각 대사는 이모지 1~2개 포함, 20자 이내, 서로 다른 느낌으로.
-출력 형식: 번호 없이 한 줄에 하나씩, 다른 텍스트 없이 대사만.`;
+아래 각 상황에 맞는 짧은 한국어 대사를 서로 다른 느낌으로 3개씩 만들어줘.
+조건: 각 대사는 이모지 1~2개 포함, 20자 이내, 성격에 맞게.${diarySection}
+
+반드시 아래 JSON 형식으로만 출력해. 각 트리거는 문자열 배열 3개. 다른 텍스트 없이 JSON만:
+{"greeting":["...","...","..."], "feed":["...","...","..."], "play":["...","...","..."], "pet":["...","...","..."], "clean":["...","...","..."], "medicine":["...","...","..."], "wakeup":["...","...","..."], "idle":["...","...","..."], "hungry":["...","...","..."], "sleepy":["...","...","..."], "sick":["...","...","..."], "click":["...","...","..."], "interact":["...","...","..."]${diaryKey}}`;
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     { method:'POST', headers:{'Content-Type':'application/json'},
@@ -657,11 +847,17 @@ async function geminiBatch({ apiKey, me, other, relation, trigger, count=10 }) {
 
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-  if (!text) throw new Error('배치 응답 파싱 실패');
+  if (!text) throw new Error('응답 파싱 실패');
 
-  return text.split('\n')
-    .map(l => l.replace(/^\d+[\.\)]\s*/, '').trim())
-    .filter(l => l.length > 0 && l.length < 40);
+  const clean = text.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
+
+  try {
+    const obj = JSON.parse(clean);
+    if (typeof obj !== 'object' || Array.isArray(obj)) throw new Error('JSON 형식 오류');
+    return obj; // { greeting: ["..","..",".."], feed: [...], ..., diary: "..." }
+  } catch(e) {
+    throw new Error(`JSON 파싱 실패: ${clean.slice(0,100)}`);
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -695,11 +891,143 @@ function runMain() {
   }
   resetDecayTimer();
 
+  // ── day speed (age calculation) ──
+  function calcAge(born) {
+    return Math.floor((Date.now() - born) / (DAY_SPEEDS[D.common.daySpeed||'normal']));
+  }
+
+  // ── achievement unlock ──
+  // use a session Set so banners never re-fire after reload
+  const sessionUnlocked = new Set(D.common.achievements||[]);
+
+  function unlock(id) {
+    if (sessionUnlocked.has(id)) return; // already done this session or ever
+    sessionUnlocked.add(id);
+    if (!D.common.achievements) D.common.achievements = [];
+    if (!D.common.achievements.includes(id)) {
+      D.common.achievements.push(id);
+      const achv = ACHIEVEMENTS.find(a=>a.id===id);
+      if (achv) {
+        showAchievementBanner(achv);
+        if (D.common.notifyOn && Notification.permission==='granted') {
+          new Notification('🏆 업적 달성!', { body:`${achv.emoji} ${achv.name} — ${achv.desc}` });
+        }
+      }
+      saveD(D);
+    }
+  }
+
+  function showAchievementBanner(achv) {
+    const b = document.getElementById('growth-banner');
+    b.innerHTML = `🏆 업적 달성!<br>${achv.emoji} ${achv.name}`;
+    b.classList.add('show');
+    spawnConfetti();
+    setTimeout(()=>b.classList.remove('show'), 3000);
+  }
+
+  // ── growth check ──
+  function checkGrowth(ci) {
+    const C = D.chars[ci];
+    if (!C) return;
+    // ensure stageId is initialized
+    if (!C.stageId) C.stageId = 'baby';
+    const newStage = getStage(C.age||0, C.care||0);
+    if (newStage.id === C.stageId) return; // no change
+    C.stageId = newStage.id;
+    applyCharScale(ci, newStage.scale);
+    const b = document.getElementById('growth-banner');
+    b.innerHTML = `${newStage.emoji} ${C.name}이(가) ${newStage.label}(으)로 성장했어요!`;
+    b.classList.add('show');
+    spawnConfetti();
+    setTimeout(()=>b.classList.remove('show'), 3500);
+    aiSpeak(ci, 'idle');
+    const achvMap = { child:'grow_child', teen:'grow_teen', adult:'grow_adult' };
+    if (achvMap[newStage.id]) unlock(achvMap[newStage.id]);
+    saveD(D); // fix: was calling undefined save()
+  }
+
+  function applyCharScale(ci, scale) {
+    const img = document.getElementById('img'+ci);
+    const base = 78;
+    const sz = Math.round(base * scale);
+    const wrap = document.getElementById('char'+ci);
+    wrap.style.transition = 'width .8s, height .8s';
+    wrap.style.width  = sz+'px';
+    wrap.style.height = sz+'px';
+  }
+
+  // restore char sizes on load — use saved stageId, not recalculated
+  D.chars.forEach((c,i)=>{
+    if (!c.stageId) c.stageId = 'baby'; // ensure initialized
+    const st = GROWTH_STAGES.find(s=>s.id===c.stageId) || GROWTH_STAGES[0];
+    applyCharScale(i, st.scale);
+  });
+
+  // ── confetti ──
+  function spawnConfetti() {
+    const stage = document.getElementById('stage');
+    const colors = ['#ffd54f','#ff8a65','#7bc67e','#9fa8da','#ff8fb1','#4dd0e1'];
+    for (let i=0;i<28;i++) {
+      setTimeout(()=>{
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.cssText = `left:${Math.random()*280}px;top:${Math.random()*40}px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${0.8+Math.random()*1}s;`;
+        stage.appendChild(c);
+        setTimeout(()=>c.remove(), 2000);
+      }, i*40);
+    }
+  }
+
+  // ── diary generation — piggybacks on refillPool ──
+  function tryGenerateDiary(ci) {
+    const C = D.chars[ci];
+    const today = C.age||0;
+    if (!D.common.lastDiaryDay) D.common.lastDiaryDay = [-1,-1];
+    if (D.common.lastDiaryDay[ci] === today) return; // already wrote today
+
+    const ac = C.actionCounts||{};
+    const summary = `밥 ${ac.feed||0}회, 놀기 ${ac.play||0}회, 목욕 ${ac.clean||0}회, 쓰다듬기 ${ac.pet||0}회`;
+    const moodStr = C.happy>70?'행복한':C.hunger<30?'배고팠던':C.health<50?'몸이 안 좋았던':'평온한';
+
+    if (D.common.apiKey) {
+      // request diary alongside next batch refill
+      const diaryCtx = { day: today, summary, mood: moodStr };
+      refillPool(ci, diaryCtx); // piggybacks — if canBatch() fails, falls to fallback below
+      if (!canBatch(ci)) {
+        // write fallback diary immediately if batch is on cooldown
+        writeFallbackDiary(ci, today, ac, moodStr);
+      }
+    } else {
+      writeFallbackDiary(ci, today, ac, moodStr);
+    }
+  }
+
+  function writeFallbackDiary(ci, today, ac, moodStr) {
+    if (!D.common.lastDiaryDay) D.common.lastDiaryDay=[-1,-1];
+    if (D.common.lastDiaryDay[ci]===today) return;
+    D.common.lastDiaryDay[ci] = today;
+    const text = `오늘은 ${moodStr} 하루였어요. ${ac.feed>0?`밥을 ${ac.feed}번 먹었어요 🍎 `:''}${ac.play>0?`${ac.play}번이나 같이 놀았어요 🎾 `:''}내일도 좋은 하루가 되길 바라요 😊`;
+    const diary = loadDiary();
+    diary.push({ ci, day:today, date:new Date().toLocaleDateString('ko-KR'), text });
+    saveDiary(diary);
+    D.chars[ci].actionCounts = {feed:0,play:0,clean:0,medicine:0,pet:0};
+    saveD(D);
+  }
+
+  // check diary every minute
+  setInterval(()=>{
+    for(let ci=0;ci<charCount;ci++) tryGenerateDiary(ci);
+  }, 60000);
+
   // ── char1 enable ──
   function enableChar1(silent=false) {
     if (charCount>=2) return;
     charCount=2; D.common.hasChar1=true;
-    if (!D.chars[1]) D.chars.push(defChar(1));
+    if (!D.chars[1]) {
+      D.chars.push(defChar(1));
+      D.chars[1].stageId = 'baby'; // always start as baby
+    }
+    applyCharScale(1, GROWTH_STAGES[0].scale); // baby size = 60%
     const c1    = document.getElementById('char1');
     const addBtn= document.getElementById('add-char-btn');
     const tabs  = document.getElementById('panel-tabs');
@@ -713,7 +1041,14 @@ function runMain() {
     p1.style.display='';
     track.style.width='600px';
     refreshUI();
-    if(!silent){ saveD(D); notifySettings(); }
+    unlock('two_chars');
+    applyAffinityPositions(false);
+    updateHeartGauge();
+    if(!silent){
+      saveD(D); notifySettings();
+      // new char added — force fill pool immediately
+      setTimeout(()=>refillPool(1, null, true), 1000);
+    }
   }
 
   // ── restore char1 if saved ──
@@ -723,7 +1058,18 @@ function runMain() {
   }
   document.getElementById('add-char-btn').addEventListener('click',()=>enableChar1(false));
   let lastTs = 0;
+  let lastImgTs = 0;
   setInterval(()=>{
+    // check image upload from settings popup
+    const imgRaw = localStorage.getItem('deskpet_img_uploaded');
+    if (imgRaw) {
+      const imgTs = parseInt(imgRaw);
+      if (imgTs > lastImgTs) {
+        lastImgTs = imgTs;
+        unlock('first_image');
+        refreshImages();
+      }
+    }
     const raw = localStorage.getItem(TS_KEY);
     if (!raw) return;
     const ts = parseInt(raw);
@@ -780,7 +1126,7 @@ function runMain() {
     inp.addEventListener('change',e=>{
       const f=e.target.files[0]; if(!f) return;
       const r=new FileReader();
-      r.onload=ev=>{ try{localStorage.setItem(IMG_KEYS[i],ev.target.result);}catch(x){} refreshImages(); showBubble(i,'안녕! 잘 부탁해요 🎉'); };
+      r.onload=ev=>{ try{localStorage.setItem(IMG_KEYS[i],ev.target.result);}catch(x){} refreshImages(); showBubble(i,'안녕! 잘 부탁해요 🎉'); unlock('first_image'); };
       r.readAsDataURL(f);
     });
   });
@@ -809,7 +1155,7 @@ function runMain() {
     document.getElementById('info-age').textContent=`나이: ${C?.age||0}일`;
     document.getElementById('info-mood').textContent=getMoodEmoji(activePanel);
     if(charCount===2){
-      const [lbl]=getAffinityLabel(D.common.affinity);
+      const [, lbl] = getAffinityLabel(D.common.affinity);
       document.getElementById('info-affinity').textContent=`${lbl} ${Math.round(D.common.affinity)}`;
     } else {
       document.getElementById('info-affinity').textContent=D.chars[0]?.name||'';
@@ -837,13 +1183,21 @@ function runMain() {
   const BATCH_LOG = [];
   let batchRunning = false;
   let blockedUntil = 0;
+  let lastRefillTime = [0, 0]; // per-char cooldown
 
-  function canBatch() {
+  function getPoolTotal(ci) {
+    const p = loadPool();
+    if (!p[ci]) return 0;
+    return Object.values(p[ci]).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
+  }
+
+  function canBatch(ci, force=false) {
     if (Date.now() < blockedUntil) return false;
     if (batchRunning) return false;
+    if (!force && Date.now() - lastRefillTime[ci] < 10 * 60 * 1000) return false; // 10분 per-char 쿨다운
     const cutoff = Date.now() - 60000;
     while (BATCH_LOG.length && BATCH_LOG[0] < cutoff) BATCH_LOG.shift();
-    return BATCH_LOG.length < 5;
+    return BATCH_LOG.length < 2; // 분당 최대 2회
   }
 
   // hardcoded fallbacks per trigger
@@ -877,31 +1231,63 @@ function runMain() {
     const log=loadLog(); log.push(entry); saveLog(log);
   }
 
-  // ── batch refill ──
-  async function refillPool(ci, trigger) {
-    if (!D.common.apiKey || !canBatch()) return;
+  // ── refill: one API call → all triggers [+ diary if needed] ──
+  async function refillPool(ci, diaryCtx=null, force=false) {
+    if (!D.common.apiKey || !canBatch(ci, force)) return;
     batchRunning = true;
     BATCH_LOG.push(Date.now());
+    lastRefillTime[ci] = Date.now();
     try {
       const other = charCount===2 ? D.chars[1-ci] : null;
       const rel   = D.common.relation||(charCount===2?getAffinityLabel(D.common.affinity)[2]:'');
-      const lines = await geminiBatch({ apiKey:D.common.apiKey, me:D.chars[ci], other, relation:rel, trigger, count:10 });
-      lines.forEach(l => poolPush(ci, trigger, l));
-      pushLog({ ci, trigger, time:Date.now(), line:`[배치 ${lines.length}개 저장됨]`, fail:null });
+      const result = await geminiAllTriggers({
+        apiKey: D.common.apiKey, me: D.chars[ci], other, relation: rel,
+        includeDiary: !!diaryCtx, diaryContext: diaryCtx,
+      });
+      let saved = 0;
+      Object.entries(result).forEach(([trigger, value]) => {
+        if (trigger === 'diary') {
+          // diary is still a plain string
+          if (typeof value === 'string' && value.trim()) {
+            const diary = loadDiary();
+            diary.push({
+              ci, day: D.chars[ci].age||0,
+              date: new Date().toLocaleDateString('ko-KR'),
+              text: value.trim(),
+            });
+            saveDiary(diary);
+            if (!D.common.lastDiaryDay) D.common.lastDiaryDay=[-1,-1];
+            D.common.lastDiaryDay[ci] = D.chars[ci].age||0;
+            D.chars[ci].actionCounts = {feed:0,play:0,clean:0,medicine:0,pet:0};
+            saveD(D);
+          }
+        } else {
+          // each trigger is now an array of 3 lines
+          const lines = Array.isArray(value) ? value : [value];
+          lines.forEach(line => {
+            if (typeof line === 'string' && line.trim()) {
+              poolPush(ci, trigger, line.trim());
+              saved++;
+            }
+          });
+        }
+      });
+      pushLog({ ci, trigger:'[전체]', time:Date.now(), line:`[트리거 ${saved}개${diaryCtx?' + 일기':''}]`, fail:null });
     } catch(err) {
-      const msg = err.message||'배치 오류';
-      if (msg.includes('429')) blockedUntil = Date.now() + 120000;
-      pushLog({ ci, trigger, time:Date.now(), line:null, fail:`배치: ${msg}` });
+      const msg = err.message||'오류';
+      if (msg.includes('429') || msg.includes('503')) blockedUntil = Date.now() + 120000;
+      pushLog({ ci, trigger:'[전체]', time:Date.now(), line:null, fail:`배치: ${msg}` });
     } finally {
       batchRunning = false;
     }
   }
 
+  // check if ANY trigger pool is low → refill all at once
   function checkAndRefill(ci, trigger) {
     if (!D.common.apiKey) return;
     const p = loadPool();
     const count = p[ci]?.[trigger]?.length || 0;
-    if (count <= 3) refillPool(ci, trigger);
+    if (count === 0) refillPool(ci); // 완전히 바닥났을 때만 보충
   }
 
   // ── main speak: always pool → fallback ──
@@ -957,33 +1343,51 @@ function runMain() {
     btn.addEventListener('click',()=>{
       const ci=parseInt(btn.dataset.ci),act=btn.dataset.act;
       const C=D.chars[ci]; if(!C) return;
+      if (!C.actionCounts) C.actionCounts={feed:0,play:0,clean:0,medicine:0,pet:0};
+      if (!C.care) C.care=0;
       if(C.asleep&&act!=='sleep'){showBubble(ci,'지금 자고 있어요... 💤');return;}
       if(act==='feed'){
         if(C.hunger>=98){showBubble(ci,'배불러요! 🍎');return;}
         C.hunger=Math.min(100,C.hunger+25);C.happy=Math.min(100,C.happy+3);
+        C.care+=3; C.actionCounts.feed++;
         spawnHeart(ci);bounce(ci);aiSpeak(ci,'feed','냠냠! 😋');
-        if(charCount===2)D.common.affinity=Math.min(100,D.common.affinity+2);
+        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+2); recordAction(ci,'feed'); }
+        if(C.actionCounts.feed===1) unlock('first_feed');
+        if(C.actionCounts.feed>=50) unlock('feed_50');
       }else if(act==='play'){
         if(C.sleep>=78){showBubble(ci,'졸려서 못 놀아요 😴');return;}
         C.happy=Math.min(100,C.happy+20);C.hunger=Math.max(0,C.hunger-6);C.sleep=Math.min(100,C.sleep+8);
+        C.care+=4; C.actionCounts.play++;
         spawnHeart(ci);spawnHeart(ci);bounce(ci);aiSpeak(ci,'play','같이 놀아요~ 🎾');
-        if(charCount===2)D.common.affinity=Math.min(100,D.common.affinity+2);
+        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+2); recordAction(ci,'play'); }
+        if(C.actionCounts.play===1) unlock('first_play');
+        if(C.actionCounts.play>=30) unlock('play_30');
       }else if(act==='sleep'){
         C.asleep=!C.asleep;
         if(C.asleep)showBubble(ci,'Zzz... 💤');
         else{bounce(ci);aiSpeak(ci,'wakeup','잘 잤어요~ ☀️');}
       }else if(act==='clean'){
         C.clean=Math.min(100,C.clean+35);C.happy=Math.min(100,C.happy+5);
+        C.care+=3; C.actionCounts.clean++;
         spawnHeart(ci);bounce(ci);aiSpeak(ci,'clean','깨끗해졌어요! ✨');
+        if(charCount===2) recordAction(ci,'clean');
+        if(C.actionCounts.clean===1) unlock('first_clean');
+        if(C.clean>=100) unlock('clean_100');
       }else if(act==='medicine'){
         if(C.health>=85){showBubble(ci,'지금은 건강해요! 😊');return;}
-        C.health=Math.min(100,C.health+30);aiSpeak(ci,'medicine','쓴데... 고마워요 💊');
+        C.health=Math.min(100,C.health+30); C.actionCounts.medicine++;
+        aiSpeak(ci,'medicine','쓴데... 고마워요 💊');
+        if(C.actionCounts.medicine>=10) unlock('medicine_10');
       }else if(act==='pet'){
         C.happy=Math.min(100,C.happy+15);
+        C.care+=2; C.actionCounts.pet++;
         spawnHeart(ci);spawnHeart(ci);spawnHeart(ci);bounce(ci);aiSpeak(ci,'pet','좋아요~ ✨');
-        if(charCount===2)D.common.affinity=Math.min(100,D.common.affinity+1);
+        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+1); recordAction(ci,'pet'); }
       }
-      updateBars(ci);saveD(D);refreshInfoBar();
+      checkGrowth(ci);
+      updateBars(ci);
+      if(charCount===2) updateHeartGauge();
+      saveD(D);refreshInfoBar();
     });
   });
 
@@ -1027,53 +1431,329 @@ function runMain() {
       else if(C.happy<20&&!C.asleep) aiSpeak(ci,'idle','심심해요 😢');
       else if(C.clean<20&&!C.asleep) aiSpeak(ci,'idle','씻고 싶어요... 🛁');
       else if(C.health<25)           aiSpeak(ci,'sick','몸이 안 좋아요 💊');
-      C.age=Math.floor((Date.now()-C.born)/60000);
+      C.age = calcAge(C.born);
+      // health streak — track by day, not by tick
+      if (C.health >= 100) {
+        const today = C.age;
+        if ((C.healthStreakDay||0) !== today) {
+          // new day with full health
+          C.healthStreakDay = today;
+          C.healthStreak = (C.healthStreak||0) + 1;
+          if (C.healthStreak >= 7) unlock('health_7days');
+        }
+      } else {
+        C.healthStreak = 0;
+        C.healthStreakDay = -1;
+      }
+      // age achievements
+      if(C.age>=7)   unlock('day_7');
+      if(C.age>=30)  unlock('day_30');
+      if(C.age>=100) unlock('day_100');
+      // affinity achievements
+      if(charCount===2){
+        if(D.common.affinity>=80)  unlock('affinity_80');
+        if(D.common.affinity>=100) unlock('affinity_100');
+      }
+      // growth check
+      checkGrowth(ci);
       updateBars(ci);
     }
-    // affinity decay when one is neglected
-    if(charCount===2){
-      const c0=D.chars[0],c1=D.chars[1];
-      if(c0.hunger<20||c1.hunger<20||c0.happy<20||c1.happy<20)
-        D.common.affinity=Math.max(0,D.common.affinity-1.5);
-      if(c0.asleep||c1.asleep) D.common.affinity=Math.max(0,D.common.affinity-.5);
-      if(c0.happy>70&&c1.happy>70) D.common.affinity=Math.min(100,D.common.affinity+1);
+    // ── affinity tick ──
+    if (charCount===2) {
+      const c0=D.chars[0], c1=D.chars[1];
+      let delta = -0.1; // 자연 감소
+      if (c0.hunger<20||c1.hunger<20) delta -= 2;
+      if (c0.happy<20 ||c1.happy<20)  delta -= 2;
+      if (c0.clean<20 ||c1.clean<20)  delta -= 1;
+      if (c0.health<30||c1.health<30) delta -= 3;
+      if (c0.asleep  ||c1.asleep)     delta -= 0.3;
+      // 보너스 — 둘 다 좋은 상태일 때만, 속도 줄임
+      if (c0.happy>=80&&c1.happy>=80) delta += 0.3;
+      if (c0.clean>=80&&c1.clean>=80) delta += 0.15;
+      D.common.affinity = Math.max(0, Math.min(100, D.common.affinity + delta));
+      applyAffinityPositions(false);
+      updateHeartGauge();
+      if(D.common.affinity>=80)  unlock('affinity_80');
+      if(D.common.affinity>=100) unlock('affinity_100');
     }
     saveD(D); refreshInfoBar();
   }
 
-  // ── interaction ──
+  // ── affinity position + heart gauge ──
+  // stage width 300px, char width ~78px
+  // 호감도 높을수록 가까워짐 (left값이 서로 좁아짐)
+  function getAffinityPositions(affinity) {
+    if (affinity <= 20) return [8,  214];  // 😒 양 끝 (서먹)
+    if (affinity <= 40) return [22, 196];  // 🙂 조금 떨어짐
+    if (affinity <= 60) return [38, 178];  // 😊 중간
+    if (affinity <= 80) return [55, 158];  // 😄 가까이
+    return [72, 140];                       // 💕 바짝 붙음
+  }
+
+  function applyAffinityPositions(animate=true) {
+    if (charCount < 2) return;
+    const [l0, l1] = getAffinityPositions(D.common.affinity);
+    const c0 = document.getElementById('char0');
+    const c1 = document.getElementById('char1');
+    if (animate) {
+      c0.style.transition = 'left 1.2s cubic-bezier(.34,1.56,.64,1)';
+      c1.style.transition = 'left 1.2s cubic-bezier(.34,1.56,.64,1)';
+    } else {
+      c0.style.transition = 'none';
+      c1.style.transition = 'none';
+    }
+    c0.style.left = l0 + 'px';
+    c1.style.left = l1 + 'px';
+    // 서먹서먹(0~20)이면 img0 좌우 반전 (등 돌리기)
+    const img0 = document.getElementById('img0');
+    const img1 = document.getElementById('img1');
+    if (D.common.affinity <= 20) {
+      img0.style.transform = (img0.style.transform||'').replace(' scaleX(-1)','') + ' scaleX(-1)';
+    } else {
+      // 반전 해제 (bounce scaleX는 그대로 유지)
+      img0.style.transform = (img0.style.transform||'').replace(' scaleX(-1)','');
+    }
+  }
+
+  function updateHeartGauge() {
+    const gauge = document.getElementById('heart-gauge');
+    if (charCount < 2) { gauge.classList.remove('show'); return; }
+    gauge.classList.add('show');
+    const filled = Math.round((D.common.affinity / 100) * 5);
+    for (let i = 0; i < 5; i++) {
+      const el = document.getElementById('hg' + i);
+      if (!el) continue;
+      if (i < filled) {
+        el.classList.add('filled'); el.classList.remove('empty');
+        el.textContent = '❤️';
+      } else {
+        el.classList.add('empty'); el.classList.remove('filled');
+        el.textContent = '🖤';
+      }
+    }
+  }
+
+  // ── consecutive action detection ──
+  const lastAction = [null, null];
+  function recordAction(ci, act) {
+    lastAction[ci] = { act, time: Date.now() };
+    const other = lastAction[1-ci];
+    if (other && other.act===act && Date.now()-other.time<=5000) {
+      D.common.affinity = Math.min(100, D.common.affinity+5); // +3 → +5
+      spawnInteract('✨');
+      updateHeartGauge(); saveD(D); refreshInfoBar();
+    }
+  }
+
+  // ── interaction events by affinity tier ──
   let iaCd=false;
-  setInterval(()=>{
-    if(charCount<2||iaCd)return;
-    const C0=D.chars[0],C1=D.chars[1];
-    const i0=document.getElementById('img0'),i1=document.getElementById('img1');
-    if(!i0.src||i0.style.display==='none'||!i1.src||i1.style.display==='none')return;
-    if(C0.asleep||C1.asleep)return;
-    if(C0.happy>65&&C1.happy>65){
-      iaCd=true; setTimeout(()=>iaCd=false,28000);
-      spawnInteract(['💕','✨','🎵','💫','🌟'][Math.floor(Math.random()*5)]);
+
+  function tryInteract() {
+    if (charCount<2||iaCd) return;
+    const C0=D.chars[0], C1=D.chars[1];
+    const i0=document.getElementById('img0'), i1=document.getElementById('img1');
+    if (!i0.src||i0.style.display==='none'||!i1.src||i1.style.display==='none') return;
+    if (C0.asleep||C1.asleep) return;
+    const aff = D.common.affinity;
+
+    // 아픈 쪽 걱정 (항상 우선)
+    if (C0.health<30) {
+      iaCd=true; setTimeout(()=>iaCd=false,20000);
+      spawnInteract('💊'); aiSpeak(1,'interact',`${C0.name}아, 괜찮아? 💊`); return;
+    }
+    if (C1.health<30) {
+      iaCd=true; setTimeout(()=>iaCd=false,20000);
+      spawnInteract('💊'); aiSpeak(0,'interact',`${C1.name}아, 괜찮아? 💊`); return;
+    }
+
+    if (aff <= 20) {
+      // 😒 서먹 — 어색한 반응
+      iaCd=true; setTimeout(()=>iaCd=false,25000);
+      showBubble(0,['...','으...어색해','흠...'][Math.floor(Math.random()*3)]);
+      setTimeout(()=>showBubble(1,['...','뭐야...','어색하다'][Math.floor(Math.random()*3)]),1200);
+
+    } else if (aff <= 40) {
+      // 🙂 슬쩍 쳐다보다 고개 돌리기
+      iaCd=true; setTimeout(()=>iaCd=false,25000);
+      spawnInteract('👀');
+      const [l0,l1]=getAffinityPositions(aff);
+      const c0el=document.getElementById('char0'), c1el=document.getElementById('char1');
+      c0el.style.left=(l0+10)+'px'; c1el.style.left=(l1-10)+'px';
+      setTimeout(()=>applyAffinityPositions(true),1600);
+
+    } else if (aff <= 60) {
+      // 😊 가까워지기
+      iaCd=true; setTimeout(()=>iaCd=false,25000);
+      spawnInteract(['💫','🎵','✨'][Math.floor(Math.random()*3)]);
       D.common.affinity=Math.min(100,D.common.affinity+4);
-      const c0el=document.getElementById('char0'),c1el=document.getElementById('char1');
-      c0el.style.left='52px';c1el.style.left='170px';
-      setTimeout(()=>{c0el.style.left='36px';c1el.style.left='186px';},4000);
+      const c0el=document.getElementById('char0'), c1el=document.getElementById('char1');
+      c0el.style.left='72px'; c1el.style.left='150px';
+      setTimeout(()=>applyAffinityPositions(true),3500);
       aiSpeak(0,'interact',`${C1.name}이랑 있으면 좋아요 💕`);
       setTimeout(()=>aiSpeak(1,'interact',`${C0.name}이랑 같이 있어서 행복해요 ✨`),2600);
-      saveD(D); refreshInfoBar();
-    }else if(C0.health<30&&!C1.asleep){
-      iaCd=true;setTimeout(()=>iaCd=false,20000);
-      spawnInteract('💊');aiSpeak(1,'interact',`${C0.name}아, 괜찮아? 💊`);
-    }else if(C1.health<30&&!C0.asleep){
-      iaCd=true;setTimeout(()=>iaCd=false,20000);
-      spawnInteract('💊');aiSpeak(0,'interact',`${C1.name}아, 괜찮아? 💊`);
+
+    } else if (aff <= 80) {
+      // 😄 같이 점프 + 하트 교환
+      iaCd=true; setTimeout(()=>iaCd=false,20000);
+      spawnInteract('💕');
+      D.common.affinity=Math.min(100,D.common.affinity+4);
+      bounce(0); setTimeout(()=>bounce(1),150);
+      spawnHeart(0); spawnHeart(1);
+      aiSpeak(0,'interact',`${C1.name}이랑 있으면 행복해요 💕`);
+      setTimeout(()=>aiSpeak(1,'interact',`${C0.name}이랑 있으면 최고야! 💕`),2400);
+
+    } else {
+      // 💕 베프 — 파티클 폭발
+      iaCd=true; setTimeout(()=>iaCd=false,15000);
+      spawnInteract('🌟');
+      D.common.affinity=Math.min(100,D.common.affinity+5);
+      spawnConfetti();
+      spawnHeart(0); spawnHeart(0); spawnHeart(1); spawnHeart(1);
+      bounce(0); setTimeout(()=>bounce(1),80);
+      aiSpeak(0,'interact',`${C1.name}은 내 최고의 친구야! 🌟`);
+      setTimeout(()=>aiSpeak(1,'interact',`${C0.name}이랑 영원히 같이 있을 거야 💕`),2200);
     }
-  },24000);
+
+    updateHeartGauge(); saveD(D); refreshInfoBar();
+  }
+
+  setInterval(tryInteract, 15000);
+
+  // ══════════════════════════════
+  //  BACKGROUND SYSTEM
+  // ══════════════════════════════
+
+  // time-of-day themes
+  const TIME_THEMES = {
+    dawn: {  // 05~08
+      sky: 'linear-gradient(180deg,#ffb347 0%,#ffcc80 40%,#ffe0b2 100%)',
+      celestial: '🌤️', stars: 0,
+    },
+    day: {   // 08~17
+      sky: 'linear-gradient(180deg,#42a5f5 0%,#90caf9 55%,#e3f2fd 100%)',
+      celestial: '☀️', stars: 0,
+    },
+    dusk: {  // 17~19
+      sky: 'linear-gradient(180deg,#7e57c2 0%,#ef6c00 45%,#ffb74d 100%)',
+      celestial: '🌇', stars: 0,
+    },
+    evening: { // 19~22
+      sky: 'linear-gradient(180deg,#1a237e 0%,#283593 50%,#3949ab 100%)',
+      celestial: '🌙', stars: 3,
+    },
+    night: {  // 22~05
+      sky: 'linear-gradient(180deg,#0d0d1a 0%,#0d1b3e 60%,#1a237e 100%)',
+      celestial: '🌕', stars: 7,
+    },
+  };
+
+  // season ground + particle config
+  const SEASON_THEMES = {
+    spring: {
+      ground: 'linear-gradient(180deg,#a5d6a7 0%,#66bb6a 100%)',
+      particle: '🌸', rate: 3000, count: 1,
+    },
+    summer: {
+      ground: 'linear-gradient(180deg,#2e7d32 0%,#388e3c 100%)',
+      particle: null, rate: 0, count: 0,
+    },
+    autumn: {
+      ground: 'linear-gradient(180deg,#bf8040 0%,#8d5524 100%)',
+      particle: '🍂', rate: 2500, count: 1,
+    },
+    winter: {
+      ground: 'linear-gradient(180deg,#e8eaf6 0%,#c5cae9 100%)',
+      particle: '❄️', rate: 2000, count: 1,
+    },
+  };
+
+  function getTimeOfDay(h) {
+    if (h>=5  && h<8)  return 'dawn';
+    if (h>=8  && h<17) return 'day';
+    if (h>=17 && h<19) return 'dusk';
+    if (h>=19 && h<22) return 'evening';
+    return 'night';
+  }
+
+  function getSeason(m) { // m: 0-indexed month
+    if (m>=2  && m<=4)  return 'spring';
+    if (m>=5  && m<=7)  return 'summer';
+    if (m>=8  && m<=10) return 'autumn';
+    return 'winter';
+  }
+
+  // DOM refs
+  const skyEl       = document.getElementById('sky');
+  const groundEl    = document.getElementById('ground');
+  const celestialEl = document.getElementById('celestial');
+
+  let bgStarEls = [];
+  let seasonParticleTimer = null;
+  let currentSeason = null;
+
+  function applyBackground() {
+    const now     = new Date();
+    const tod     = getTimeOfDay(now.getHours());
+    const season  = getSeason(now.getMonth());
+    const tTheme  = TIME_THEMES[tod];
+    const sTheme  = SEASON_THEMES[season];
+
+    // sky + celestial
+    skyEl.style.background    = tTheme.sky;
+    celestialEl.textContent   = tTheme.celestial;
+    celestialEl.style.opacity = '1';
+
+    // ground
+    groundEl.style.background = sTheme.ground;
+
+    // stars
+    bgStarEls.forEach(s=>s.remove());
+    bgStarEls = [];
+    for (let i=0; i<tTheme.stars; i++) {
+      const s = document.createElement('div');
+      s.className = 'star';
+      const sz = 1.5 + Math.random()*2;
+      s.style.cssText = `width:${sz}px;height:${sz}px;top:${5+Math.random()*70}px;left:${Math.random()*260}px;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s;`;
+      stage.appendChild(s);
+      bgStarEls.push(s);
+    }
+
+    // season particles — restart if season changed
+    if (season !== currentSeason) {
+      clearInterval(seasonParticleTimer);
+      currentSeason = season;
+      if (sTheme.particle && sTheme.rate > 0) {
+        seasonParticleTimer = setInterval(()=>spawnSeasonParticle(sTheme.particle), sTheme.rate);
+      }
+    }
+  }
+
+  function spawnSeasonParticle(emoji) {
+    const p = document.createElement('div');
+    p.className = 'season-particle';
+    p.textContent = emoji;
+    const dur = 3 + Math.random()*3;
+    p.style.cssText = `left:${Math.random()*290}px;top:-10px;font-size:${10+Math.random()*8}px;animation-duration:${dur}s;`;
+    stage.appendChild(p);
+    setTimeout(()=>p.remove(), dur*1000+200);
+  }
+
+  // apply now + refresh every minute
+  applyBackground();
+  setInterval(applyBackground, 60000);
 
   // ── clouds ──
   function addCloud(){
-    const c=document.createElement('div');c.className='cloud';
-    const cw=Math.random()*55+32,ch=Math.random()*8+5;
-    c.style.cssText=`width:${cw}px;height:${ch}px;top:${Math.random()*55+4}px;left:-${cw}px;opacity:${Math.random()*.4+.35}`;
-    const dur=Math.random()*14+11;c.style.transition=`left ${dur}s linear`;
+    const now = new Date();
+    const tod = getTimeOfDay(now.getHours());
+    const cloudColors = {
+      dawn:'rgba(255,220,180,.85)', day:'rgba(255,255,255,.88)',
+      dusk:'rgba(255,180,120,.8)', evening:'rgba(100,120,200,.6)', night:'rgba(60,70,130,.5)',
+    };
+    const c=document.createElement('div'); c.className='cloud';
+    const cw=Math.random()*55+32, ch=Math.random()*8+5;
+    c.style.cssText=`width:${cw}px;height:${ch}px;top:${Math.random()*55+4}px;left:-${cw}px;background:${cloudColors[tod]};border-radius:20px;`;
+    const dur=Math.random()*14+11; c.style.transition=`left ${dur}s linear`;
     stage.appendChild(c);
     requestAnimationFrame(()=>{c.style.left=(300+cw+10)+'px';});
     setTimeout(()=>c.remove(),(dur+1)*1000);
@@ -1104,18 +1784,30 @@ function runMain() {
 
   // greeting + initial pool refill
   setTimeout(()=>{
-    // show greeting from pool (or fallback)
     const img=document.getElementById('img0');
     if(img.src&&img.style.display!=='none') aiSpeak(0,'greeting');
-    // pre-fill all trigger pools in background
+
+    // "초기 집중 충전" — 풀이 부족하면 쿨다운 무시하고 즉시 채움
+    // 트리거 13개 × 3개 = 39개가 만땅. 15개 이하면 초반으로 판단
     setTimeout(()=>{
-      for(let ci=0;ci<charCount;ci++){
-        ALL_TRIGGERS.forEach((t,idx)=>{
-          // stagger requests so they don't all fire at once
-          setTimeout(()=>checkAndRefill(ci,t), idx*2000);
-        });
+      const FULL_THRESHOLD = 15;
+      if (getPoolTotal(0) < FULL_THRESHOLD) {
+        refillPool(0, null, true); // force
       }
-    }, 2000);
+      if (charCount >= 2) {
+        setTimeout(()=>{
+          if (getPoolTotal(1) < FULL_THRESHOLD) {
+            refillPool(1, null, true); // force
+          }
+        }, 4000); // 캐릭터1 배치 완료 후 4초 여유
+      }
+    }, 500);
+
+    if(D.chars[0]?.name && D.chars[0].name!=='캐릭터1') unlock('first_name');
+    const h = new Date().getHours();
+    if(h>=0 && h<4) unlock('night_owl');
+    applyAffinityPositions(false);
+    updateHeartGauge();
   },1000);
 
   // ── notification system ──
@@ -1183,9 +1875,13 @@ function runSettings(){
       document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
-      if(tab.dataset.tab==='log') renderLog('all');
+      if(tab.dataset.tab==='log')   renderLog('all');
+      if(tab.dataset.tab==='diary') renderDiary();
+      if(tab.dataset.tab==='achv')  renderAchv();
     });
   });
+  // render achievement on load
+  renderAchv();
 
   document.getElementById('set-close').addEventListener('click',()=>window.close());
 
@@ -1211,14 +1907,52 @@ function runSettings(){
     });
   });
 
-  // preset buttons
-  document.querySelectorAll('.ps-btn').forEach(b=>{
+  // preset buttons (decay speed)
+  document.querySelectorAll('.ps-btn[data-ps]').forEach(b=>{
     b.classList.toggle('active',b.dataset.ps===(D.common.preset||'normal'));
     b.addEventListener('click',()=>{
-      document.querySelectorAll('.ps-btn').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.ps-btn[data-ps]').forEach(x=>x.classList.remove('active'));
       b.classList.add('active'); D.common.preset=b.dataset.ps;
     });
   });
+
+  // day speed buttons
+  document.querySelectorAll('.ps-btn[data-ds]').forEach(b=>{
+    b.classList.toggle('active',b.dataset.ds===(D.common.daySpeed||'normal'));
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('.ps-btn[data-ds]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); D.common.daySpeed=b.dataset.ds;
+    });
+  });
+
+  // diary tab render
+  function renderDiary(){
+    const list=document.getElementById('diary-list');
+    const entries=loadDiary().slice().reverse();
+    if(!entries.length){ list.innerHTML='<div class="log-empty">아직 일기가 없어요 📔</div>'; return; }
+    list.innerHTML=entries.map(e=>{
+      const name=D.chars[e.ci]?.name||`캐릭터${e.ci+1}`;
+      return `<div class="diary-item">
+        <div class="diary-date">📔 ${name} · ${e.day}일째 · ${e.date}</div>
+        <div class="diary-body">${e.text}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // achievement tab render
+  function renderAchv(){
+    const unlocked = D.common.achievements||[];
+    document.getElementById('achv-list').innerHTML = ACHIEVEMENTS.map(a=>{
+      const done = unlocked.includes(a.id);
+      return `<div class="achv-item${done?'':' locked'}">
+        <div class="achv-emoji">${a.emoji}</div>
+        <div class="achv-info">
+          <div class="achv-name">${a.name}${done?' ✅':''}</div>
+          <div class="achv-desc">${a.desc}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
 
   // image previews
   [0,1].forEach(i=>{
@@ -1236,6 +1970,8 @@ function runSettings(){
         try{localStorage.setItem(IMG_KEYS[i],ev.target.result);}catch(x){}
         prev.src=ev.target.result;prev.style.display='block';
         lbl.textContent='✅ 이미지 있음 (클릭해서 변경)';
+        // signal main popup to unlock first_image achievement
+        try{ localStorage.setItem('deskpet_img_uploaded', Date.now().toString()); }catch(x){}
         notifySettings();
       };
       r.readAsDataURL(f);
@@ -1292,6 +2028,7 @@ function runSettings(){
   document.getElementById('btn-save-common').addEventListener('click',()=>{
     D.common.apiKey            = document.getElementById('set-apikey').value.trim();
     D.common.relation          = document.getElementById('set-relation').value.trim();
+    D.common.daySpeed          = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
     D.common.notifyOn          = notifyOnEl.checked;
     D.common.notifyThreshold   = parseInt(threshEl.value);
     D.common.notifyIntervalMin = parseInt(intervalEl.value);
