@@ -910,7 +910,7 @@ const IMG_KEYS  = ['deskpet_img0','deskpet_img1'];
 const LOG_KEY   = 'deskpet_log';
 const TS_KEY    = 'deskpet_ts';
 const POOL_KEY  = 'deskpet_pool';
-const POOL_MAX  = 15; // max lines per trigger per character
+const POOL_MAX  = 50; // max lines per trigger per character
 
 function loadPool(){ try{ return JSON.parse(localStorage.getItem(POOL_KEY)||'{}'); }catch(e){ return {}; } }
 function savePool(p){ try{ localStorage.setItem(POOL_KEY,JSON.stringify(p)); }catch(e){} }
@@ -1579,7 +1579,7 @@ function runMain() {
     if (!D.common.apiKey) return;
     const p = loadPool();
     const count = p[ci]?.[trigger]?.length || 0;
-    if (count === 0) refillPool(ci); // 완전히 바닥났을 때만 보충
+    if (count <= 10) refillPool(ci); // 10개 이하면 미리 보충
   }
 
   // ── main speak: always pool → fallback ──
@@ -2082,16 +2082,16 @@ function runMain() {
     // "초기 집중 충전" — 풀이 부족하면 쿨다운 무시하고 즉시 채움
     // 트리거 13개 × 3개 = 39개가 만땅. 15개 이하면 초반으로 판단
     setTimeout(()=>{
-      const FULL_THRESHOLD = 15;
+      const FULL_THRESHOLD = 325; // 50개 × 13트리거 / 2
       if (getPoolTotal(0) < FULL_THRESHOLD) {
-        refillPool(0, true); // force
+        refillPool(0, true);
       }
       if (charCount >= 2) {
         setTimeout(()=>{
           if (getPoolTotal(1) < FULL_THRESHOLD) {
-            refillPool(1, true); // force
+            refillPool(1, true);
           }
-        }, 4000); // 캐릭터1 배치 완료 후 4초 여유
+        }, 4000);
       }
     }, 500);
 
