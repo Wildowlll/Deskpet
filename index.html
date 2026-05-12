@@ -13,20 +13,153 @@
 
 /* ══ LAUNCHER ══ */
 #launcher{
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;gap:18px;padding:40px;text-align:center;
-  font-family:'M PLUS Rounded 1c',sans-serif;color:var(--brown);background:var(--cream);
+  display:none;flex-direction:column;align-items:center;
+  min-height:100vh;
+  font-family:'M PLUS Rounded 1c',sans-serif;
+  color:var(--brown);background:var(--cream);
+  overflow-x:hidden;
 }
-#launcher h1{font-family:'DotGothic16',monospace;font-size:28px;}
-#launcher p{font-size:13px;color:#7a6555;line-height:1.8;max-width:320px;}
+
+/* hero */
+#hero{
+  width:100%;background:var(--brown);
+  display:flex;flex-direction:column;align-items:center;
+  padding:60px 24px 48px;text-align:center;gap:16px;
+}
+#hero .logo{font-size:64px;line-height:1;}
+#hero h1{
+  font-family:'DotGothic16',monospace;font-size:36px;
+  color:var(--cream);letter-spacing:2px;
+}
+#hero .tagline{
+  font-size:15px;color:rgba(253,246,227,.7);
+  line-height:1.8;max-width:400px;
+}
 #launch-btn{
-  background:var(--brown);color:var(--cream);border:none;border-radius:12px;
-  padding:13px 32px;font-family:'DotGothic16',monospace;font-size:15px;
-  cursor:pointer;box-shadow:4px 4px 0 var(--brown2);transition:all .1s;letter-spacing:1px;
+  background:var(--yellow);color:var(--brown);border:none;
+  border-radius:14px;padding:15px 40px;
+  font-family:'DotGothic16',monospace;font-size:17px;
+  cursor:pointer;box-shadow:4px 4px 0 rgba(0,0,0,.25);
+  transition:all .1s;letter-spacing:1px;margin-top:8px;
 }
-#launch-btn:hover{background:#5d4437;}
+#launch-btn:hover{background:#ffe082;}
 #launch-btn:active{transform:translate(4px,4px);box-shadow:none;}
-#hint{font-size:11px;color:#b0a090;font-family:'DotGothic16',monospace;}
+#hint{font-size:11px;color:rgba(253,246,227,.5);font-family:'DotGothic16',monospace;}
+
+/* sections */
+.section{
+  width:100%;max-width:640px;
+  padding:48px 28px;
+  display:flex;flex-direction:column;align-items:center;gap:24px;
+}
+.section-title{
+  font-family:'DotGothic16',monospace;font-size:18px;
+  color:var(--brown);text-align:center;
+  border-bottom:2.5px solid var(--brown);
+  padding-bottom:8px;width:100%;
+}
+
+/* features grid */
+.features{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:14px;width:100%;
+}
+.feature-card{
+  background:#fff;border:2px solid var(--brown);border-radius:14px;
+  padding:20px 14px;text-align:center;
+  box-shadow:3px 3px 0 var(--brown);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.feature-card .ficon{font-size:30px;}
+.feature-card .fname{
+  font-family:'DotGothic16',monospace;font-size:12px;color:var(--brown);font-weight:bold;
+}
+.feature-card .fdesc{font-size:12px;color:#7a6555;line-height:1.6;}
+
+/* screenshots */
+.screenshots{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;width:100%;
+}
+.screenshot-slot{
+  background:#e8dcc8;border:2px solid var(--brown);border-radius:12px;
+  aspect-ratio:3/4;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DotGothic16',monospace;font-size:10px;color:#a09080;
+  text-align:center;padding:12px;overflow:hidden;
+}
+.screenshot-slot img{
+  width:100%;height:100%;object-fit:cover;border-radius:9px;
+}
+
+/* how to use */
+.steps{display:flex;flex-direction:column;gap:12px;width:100%;}
+.step{
+  display:flex;align-items:flex-start;gap:14px;
+  background:#fff;border:2px solid var(--brown);border-radius:12px;
+  padding:14px 16px;box-shadow:2px 2px 0 var(--brown);
+}
+.step-num{
+  background:var(--brown);color:var(--cream);
+  font-family:'DotGothic16',monospace;font-size:13px;
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step-text{font-size:13px;color:var(--brown);line-height:1.7;}
+.step-text strong{font-family:'DotGothic16',monospace;font-size:12px;}
+
+/* api guide */
+.api-box{
+  background:#fff;border:2px solid var(--brown);border-radius:14px;
+  padding:22px;width:100%;box-shadow:3px 3px 0 var(--brown);
+  display:flex;flex-direction:column;gap:12px;
+}
+.api-step{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--brown);line-height:1.6;
+}
+.api-step .astep{
+  background:var(--yellow);color:var(--brown);
+  font-family:'DotGothic16',monospace;font-size:10px;
+  padding:2px 7px;border-radius:4px;flex-shrink:0;border:1.5px solid var(--brown);
+}
+.api-link{
+  color:var(--brown);font-weight:bold;
+  text-decoration:underline;text-underline-offset:3px;
+}
+.api-note{
+  font-size:11px;color:#a09080;font-family:'DotGothic16',monospace;
+  background:#fff9f0;border-radius:8px;padding:10px 12px;line-height:1.7;
+  border:1.5px dashed #d4c9b0;
+}
+
+/* reset section */
+.reset-box{
+  background:#fff;border:2px solid var(--brown);border-radius:14px;
+  padding:22px;width:100%;box-shadow:3px 3px 0 var(--brown);
+  display:flex;flex-direction:column;gap:10px;align-items:flex-start;
+}
+.reset-box p{font-size:13px;color:#7a6555;line-height:1.7;}
+#reset-btn{
+  background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:9px 20px;font-family:'DotGothic16',monospace;font-size:12px;
+  cursor:pointer;box-shadow:2px 2px 0 #b71c1c;transition:all .1s;
+}
+#reset-btn:hover{background:#e53935;}
+#reset-btn:active{transform:translate(2px,2px);box-shadow:none;}
+
+/* divider */
+.ldivider{width:100%;border:none;border-top:2px dashed #d4c9b0;margin:4px 0;}
+
+/* footer */
+#footer{
+  width:100%;background:var(--brown);
+  padding:24px;text-align:center;
+  font-family:'DotGothic16',monospace;font-size:11px;
+  color:rgba(253,246,227,.55);line-height:2;
+}
+#footer a{color:rgba(253,246,227,.8);text-decoration:none;}
+#footer a:hover{color:var(--cream);}
 
 /* ══ MAIN APP ══ */
 #main-app{
@@ -369,11 +502,147 @@
 
 <!-- ══ LAUNCHER ══ -->
 <div id="launcher">
-  <div style="font-size:50px">🐾</div>
-  <h1>데스크펫</h1>
-  <p>나만의 캐릭터와 함께하는 웹 다마고치.<br>팝업 창을 띄워놓고 작업하면서 돌봐줘요 🌿</p>
-  <button id="launch-btn">🐾 시작하기</button>
-  <div id="hint">팝업 차단이 뜨면 허용해주세요</div>
+
+  <!-- 히어로 -->
+  <div id="hero">
+    <div class="logo">🐾</div>
+    <h1>데스크펫</h1>
+    <p class="tagline">나만의 캐릭터를 키우는 웹 다마고치.<br>팝업 창을 띄워놓고 작업하면서 함께해요!</p>
+    <button id="launch-btn">🐾 시작하기</button>
+    <div id="hint">팝업 차단이 뜨면 주소창에서 허용해주세요</div>
+  </div>
+
+  <!-- 기능 소개 -->
+  <div class="section">
+    <div class="section-title">✨ 주요 기능</div>
+    <div class="features">
+      <div class="feature-card">
+        <div class="ficon">🌱</div>
+        <div class="fname">성장 시스템</div>
+        <div class="fdesc">열심히 돌봐주면 아기에서 어른으로 성장해요</div>
+      </div>
+      <div class="feature-card">
+        <div class="ficon">🤖</div>
+        <div class="fname">AI 대사 생성</div>
+        <div class="fdesc">Gemini AI가 캐릭터 성격에 맞는 대사를 직접 만들어줘요</div>
+      </div>
+      <div class="feature-card">
+        <div class="ficon">💕</div>
+        <div class="fname">호감도 시스템</div>
+        <div class="fdesc">캐릭터 2마리를 같이 키우면 둘 사이의 관계가 생겨요</div>
+      </div>
+      <div class="feature-card">
+        <div class="ficon">📔</div>
+        <div class="fname">AI 일기</div>
+        <div class="fdesc">매일 AI가 캐릭터 시점으로 하루 일기를 써줘요</div>
+      </div>
+      <div class="feature-card">
+        <div class="ficon">🏆</div>
+        <div class="fname">업적 20개</div>
+        <div class="fdesc">다양한 조건을 달성하며 업적을 모아보세요</div>
+      </div>
+      <div class="feature-card">
+        <div class="ficon">🌸</div>
+        <div class="fname">계절 & 시간</div>
+        <div class="fdesc">실제 시간과 계절에 따라 배경이 바뀌어요</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="ldivider"/>
+
+  <!-- 스크린샷 -->
+  <div class="section">
+    <div class="section-title">📸 미리보기</div>
+    <div class="screenshots">
+      <div class="screenshot-slot" id="ss0">
+        🖼️<br>스크린샷을<br>여기에 넣어주세요
+      </div>
+      <div class="screenshot-slot" id="ss1">
+        🖼️<br>스크린샷을<br>여기에 넣어주세요
+      </div>
+      <div class="screenshot-slot" id="ss2">
+        🖼️<br>스크린샷을<br>여기에 넣어주세요
+      </div>
+      <div class="screenshot-slot" id="ss3">
+        🖼️<br>스크린샷을<br>여기에 넣어주세요
+      </div>
+    </div>
+  </div>
+
+  <hr class="ldivider"/>
+
+  <!-- 사용 방법 -->
+  <div class="section">
+    <div class="section-title">📖 사용 방법</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>시작하기</strong> 버튼을 눌러 팝업 창을 열어요.<br>팝업 차단이 뜨면 주소창에서 허용해주세요.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">스테이지의 <strong>🐾 이미지 업로드</strong>를 눌러 캐릭터 이미지를 넣어요.<br>PNG 투명 배경 이미지를 추천해요!</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>⚙ 설정</strong>에서 이름, 성격, Gemini API 키를 입력해요.<br>API 키가 있으면 AI가 직접 대사를 만들어줘요.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">밥주기, 놀아주기, 쓰다듬기로 <strong>캐릭터를 돌봐주세요!</strong><br>방치하면 스탯이 떨어지니 자주 들여다봐요 🐾</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="ldivider"/>
+
+  <!-- Gemini API 안내 -->
+  <div class="section">
+    <div class="section-title">🔑 Gemini API 키 발급 방법</div>
+    <div class="api-box">
+      <div class="api-step">
+        <span class="astep">1</span>
+        <span><a class="api-link" href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> 에 접속해요</span>
+      </div>
+      <div class="api-step">
+        <span class="astep">2</span>
+        <span>Google 계정으로 로그인해요</span>
+      </div>
+      <div class="api-step">
+        <span class="astep">3</span>
+        <span>왼쪽 메뉴에서 <strong>Get API Key</strong> 클릭 → <strong>Create API Key</strong></span>
+      </div>
+      <div class="api-step">
+        <span class="astep">4</span>
+        <span>생성된 키를 복사해서 <strong>설정 → 공통 → API 키</strong>에 붙여넣기!</span>
+      </div>
+      <div class="api-note">
+        💡 Gemini API는 무료로 사용할 수 있어요.<br>
+        데스크펫은 대사를 미리 모아두는 방식이라 API 호출 횟수가 매우 적어요.<br>
+        API 키 없이도 기본 대사로 즐길 수 있어요!
+      </div>
+    </div>
+  </div>
+
+  <hr class="ldivider"/>
+
+  <!-- 초기화 -->
+  <div class="section">
+    <div class="section-title">🔄 데이터 초기화</div>
+    <div class="reset-box">
+      <p>처음부터 다시 키우고 싶다면 초기화할 수 있어요.<br>⚠️ 스탯, 업적, 일기, 대사 풀이 모두 삭제돼요. 이미지는 유지돼요.</p>
+      <button id="reset-btn">🗑️ 데이터 초기화</button>
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <div id="footer">
+    🐾 데스크펫<br>
+    Made by <a href="https://twitter.com/Wildowlll" target="_blank">Yabu (@Wildowlll)</a><br>
+    <span style="font-size:10px">Powered by Gemini API</span>
+  </div>
+
 </div>
 
 <!-- ══ MAIN POPUP ══ -->
@@ -517,7 +786,7 @@
         <div class="preset-btns" id="dayspeed-btns">
           <button class="ps-btn" data-ds="slow">🐌<br>24시간</button>
           <button class="ps-btn" data-ds="normal">🌿<br>1시간</button>
-          <button class="ps-btn" data-ds="fast">⚡<br>10분</button>
+          <button class="ps-btn" data-ds="fast">⚡<br>30분</button>
         </div>
       </div>
       <hr class="divider"/>
@@ -685,7 +954,7 @@ const PRESETS = {
 const DAY_SPEEDS = {
   slow:   86400000, // 24h
   normal:  3600000, // 1h  ← default
-  fast:     600000, // 10m
+  fast:    1800000, // 30m
 };
 
 // growth stages: { id, label, emoji, minAge(days), minCare, scale }
@@ -762,7 +1031,7 @@ function defChar(i){ return {
 }; }
 
 function defCommon(){ return {
-  apiKey:'', relation:'', scale:1.5, preset:'normal', hasChar1:false, affinity:50,
+  apiKey:'', relation:'', scale:1.5, preset:'normal', hasChar1:false, affinity:0,
   notifyOn:false, notifyThreshold:20,
   notifyStats:{ hunger:true, happy:false, clean:false, health:true },
   notifyIntervalMin:10,
@@ -788,11 +1057,21 @@ if (MODE === 'deskpet_main') {
   document.body.style.cssText = 'background:#fdf6e3;overflow:auto;min-height:100vh;width:100vw;border:none;border-radius:0;box-shadow:none;';
   document.getElementById('launch-btn').onclick = () => {
     const D = loadD();
-    const sc = D.common?.scale || 1;
+    const sc = D.common?.scale || 1.5;
     const [w,h] = POPUP_SIZES[sc] || POPUP_SIZES[1];
     const p = window.open(location.href,'deskpet_main',
       `width=${w},height=${h},left=${screen.width-w-20},top=${screen.height-h-60},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`);
     if (!p) { const el=document.getElementById('hint'); el.textContent='⚠️ 팝업 차단됨! 주소창에서 허용해주세요.'; el.style.color='#ef5350'; }
+  };
+
+  document.getElementById('reset-btn').onclick = () => {
+    if (!confirm('⚠️ 정말 초기화할까요?\n스탯, 업적, 일기, 대사 풀이 모두 삭제돼요.\n이미지는 유지돼요.')) return;
+    const img0 = localStorage.getItem(IMG_KEYS[0]);
+    const img1 = localStorage.getItem(IMG_KEYS[1]);
+    localStorage.clear();
+    if (img0) localStorage.setItem(IMG_KEYS[0], img0);
+    if (img1) localStorage.setItem(IMG_KEYS[1], img1);
+    alert('✅ 초기화됐어요! 이제 시작하기를 눌러주세요 🐾');
   };
 }
 
@@ -808,7 +1087,7 @@ const TRIGGER_LABELS = {
   hungry:'배고픔 호소', sleepy:'졸림', sick:'아픔', click:'클릭 반응', interact:'친구에게 말걸기',
 };
 
-async function geminiAllTriggers({ apiKey, me, other, relation, includeDiary=false, diaryContext=null }) {
+async function geminiAllTriggers({ apiKey, me, other, relation }) {
   const mood = me.asleep?'잠자는 중':me.hunger<25?'매우 배고픔':me.happy<25?'슬프고 외로움':me.health<30?'몸이 아픔':me.sleep>80?'매우 졸림':me.happy>80?'아주 행복함':me.clean<25?'더럽고 불쾌함':'평온함';
   const otherTxt = other?`\n같이 있는 친구: "${other.name}"${other.persona?` (${other.persona})`:''}`:'' ;
   const relTxt   = (relation&&other)?`\n둘의 관계: ${relation}`:'';
@@ -817,24 +1096,16 @@ async function geminiAllTriggers({ apiKey, me, other, relation, includeDiary=fal
     .map(([k,v]) => `"${k}": ${v}`)
     .join('\n');
 
-  const diarySection = includeDiary && diaryContext ? `
-
-추가로 "diary" 키에 오늘 하루 일기도 써줘.
-오늘 ${diaryContext.day}일째: ${diaryContext.summary}. 전반적으로 ${diaryContext.mood}한 하루였어.
-캐릭터 시점으로 3~4문장, 한국어, 이모지 포함, 귀엽게. 날짜/제목 없이 본문만. diary는 문자열로.` : '';
-
-  const diaryKey = includeDiary ? `, "diary":"..."` : '';
-
   const prompt =
 `너는 "${me.name}"이라는 이름의 귀여운 가상 캐릭터야.
 성격: ${me.persona||'귀엽고 활발함'}${otherTxt}${relTxt}
 현재 상태: ${mood} (나이 ${me.age}일)
 
 아래 각 상황에 맞는 짧은 한국어 대사를 서로 다른 느낌으로 3개씩 만들어줘.
-조건: 각 대사는 이모지 1~2개 포함, 20자 이내, 성격에 맞게.${diarySection}
+조건: 각 대사는 이모지 1~2개 포함, 20자 이내, 성격에 맞게.
 
 반드시 아래 JSON 형식으로만 출력해. 각 트리거는 문자열 배열 3개. 다른 텍스트 없이 JSON만:
-{"greeting":["...","...","..."], "feed":["...","...","..."], "play":["...","...","..."], "pet":["...","...","..."], "clean":["...","...","..."], "medicine":["...","...","..."], "wakeup":["...","...","..."], "idle":["...","...","..."], "hungry":["...","...","..."], "sleepy":["...","...","..."], "sick":["...","...","..."], "click":["...","...","..."], "interact":["...","...","..."]${diaryKey}}`;
+{"greeting":["...","...","..."], "feed":["...","...","..."], "play":["...","...","..."], "pet":["...","...","..."], "clean":["...","...","..."], "medicine":["...","...","..."], "wakeup":["...","...","..."], "idle":["...","...","..."], "hungry":["...","...","..."], "sleepy":["...","...","..."], "sick":["...","...","..."], "click":["...","...","..."], "interact":["...","...","..."]}`;
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     { method:'POST', headers:{'Content-Type':'application/json'},
@@ -854,10 +1125,31 @@ async function geminiAllTriggers({ apiKey, me, other, relation, includeDiary=fal
   try {
     const obj = JSON.parse(clean);
     if (typeof obj !== 'object' || Array.isArray(obj)) throw new Error('JSON 형식 오류');
-    return obj; // { greeting: ["..","..",".."], feed: [...], ..., diary: "..." }
+    return obj;
   } catch(e) {
     throw new Error(`JSON 파싱 실패: ${clean.slice(0,100)}`);
   }
+}
+
+// 일기 전용 API 호출
+async function geminiDiary({ apiKey, me, other, day, summary, mood }) {
+  const otherTxt = other?`같이 있는 친구: "${other.name}". `:'';
+  const prompt =
+`너는 "${me.name}"이라는 이름의 귀여운 가상 캐릭터야.
+성격: ${me.persona||'귀엽고 활발함'}
+${otherTxt}
+오늘(${day}일째) 있었던 일: ${summary}. 전반적으로 ${mood}한 하루였어.
+
+오늘 하루를 캐릭터 시점으로 짧은 일기로 써줘.
+3~4문장, 한국어, 이모지 포함, 귀엽고 자연스럽게. 날짜나 제목 없이 본문만.`;
+
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({contents:[{parts:[{text:prompt}]}]}) });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
 }
 
 // ══════════════════════════════════════════════════
@@ -978,8 +1270,8 @@ function runMain() {
     }
   }
 
-  // ── diary generation — piggybacks on refillPool ──
-  function tryGenerateDiary(ci) {
+  // ── diary generation — independent API call ──
+  async function tryGenerateDiary(ci) {
     const C = D.chars[ci];
     const today = C.age||0;
     if (!D.common.lastDiaryDay) D.common.lastDiaryDay = [-1,-1];
@@ -989,28 +1281,31 @@ function runMain() {
     const summary = `밥 ${ac.feed||0}회, 놀기 ${ac.play||0}회, 목욕 ${ac.clean||0}회, 쓰다듬기 ${ac.pet||0}회`;
     const moodStr = C.happy>70?'행복한':C.hunger<30?'배고팠던':C.health<50?'몸이 안 좋았던':'평온한';
 
+    let diaryText = '';
     if (D.common.apiKey) {
-      // request diary alongside next batch refill
-      const diaryCtx = { day: today, summary, mood: moodStr };
-      refillPool(ci, diaryCtx); // piggybacks — if canBatch() fails, falls to fallback below
-      if (!canBatch(ci)) {
-        // write fallback diary immediately if batch is on cooldown
-        writeFallbackDiary(ci, today, ac, moodStr);
+      try {
+        const other = charCount===2 ? D.chars[1-ci] : null;
+        diaryText = await geminiDiary({
+          apiKey: D.common.apiKey,
+          me: C, other,
+          day: today, summary, mood: moodStr,
+        }) || '';
+        pushLog({ ci, trigger:'[일기]', time:Date.now(), line:diaryText||'(생성 실패)', fail:diaryText?null:'응답 없음' });
+      } catch(e) {
+        pushLog({ ci, trigger:'[일기]', time:Date.now(), line:null, fail:e.message });
       }
-    } else {
-      writeFallbackDiary(ci, today, ac, moodStr);
     }
-  }
 
-  function writeFallbackDiary(ci, today, ac, moodStr) {
-    if (!D.common.lastDiaryDay) D.common.lastDiaryDay=[-1,-1];
-    if (D.common.lastDiaryDay[ci]===today) return;
+    // fallback if API failed or no key
+    if (!diaryText) {
+      diaryText = `오늘은 ${moodStr} 하루였어요. ${ac.feed>0?`밥을 ${ac.feed}번 먹었어요 🍎 `:''}${ac.play>0?`${ac.play}번이나 같이 놀았어요 🎾 `:''}내일도 좋은 하루가 되길 바라요 😊`;
+    }
+
     D.common.lastDiaryDay[ci] = today;
-    const text = `오늘은 ${moodStr} 하루였어요. ${ac.feed>0?`밥을 ${ac.feed}번 먹었어요 🍎 `:''}${ac.play>0?`${ac.play}번이나 같이 놀았어요 🎾 `:''}내일도 좋은 하루가 되길 바라요 😊`;
     const diary = loadDiary();
-    diary.push({ ci, day:today, date:new Date().toLocaleDateString('ko-KR'), text });
+    diary.push({ ci, day:today, date:new Date().toLocaleDateString('ko-KR'), text:diaryText });
     saveDiary(diary);
-    D.chars[ci].actionCounts = {feed:0,play:0,clean:0,medicine:0,pet:0};
+    C.actionCounts = {feed:0,play:0,clean:0,medicine:0,pet:0};
     saveD(D);
   }
 
@@ -1047,7 +1342,7 @@ function runMain() {
     if(!silent){
       saveD(D); notifySettings();
       // new char added — force fill pool immediately
-      setTimeout(()=>refillPool(1, null, true), 1000);
+      setTimeout(()=>refillPool(1, true), 1000);
     }
   }
 
@@ -1231,8 +1526,8 @@ function runMain() {
     const log=loadLog(); log.push(entry); saveLog(log);
   }
 
-  // ── refill: one API call → all triggers [+ diary if needed] ──
-  async function refillPool(ci, diaryCtx=null, force=false) {
+  // ── refill: one API call → all triggers ──
+  async function refillPool(ci, force=false) {
     if (!D.common.apiKey || !canBatch(ci, force)) return;
     batchRunning = true;
     BATCH_LOG.push(Date.now());
@@ -1242,37 +1537,18 @@ function runMain() {
       const rel   = D.common.relation||(charCount===2?getAffinityLabel(D.common.affinity)[2]:'');
       const result = await geminiAllTriggers({
         apiKey: D.common.apiKey, me: D.chars[ci], other, relation: rel,
-        includeDiary: !!diaryCtx, diaryContext: diaryCtx,
       });
       let saved = 0;
       Object.entries(result).forEach(([trigger, value]) => {
-        if (trigger === 'diary') {
-          // diary is still a plain string
-          if (typeof value === 'string' && value.trim()) {
-            const diary = loadDiary();
-            diary.push({
-              ci, day: D.chars[ci].age||0,
-              date: new Date().toLocaleDateString('ko-KR'),
-              text: value.trim(),
-            });
-            saveDiary(diary);
-            if (!D.common.lastDiaryDay) D.common.lastDiaryDay=[-1,-1];
-            D.common.lastDiaryDay[ci] = D.chars[ci].age||0;
-            D.chars[ci].actionCounts = {feed:0,play:0,clean:0,medicine:0,pet:0};
-            saveD(D);
+        const lines = Array.isArray(value) ? value : [value];
+        lines.forEach(line => {
+          if (typeof line === 'string' && line.trim()) {
+            poolPush(ci, trigger, line.trim());
+            saved++;
           }
-        } else {
-          // each trigger is now an array of 3 lines
-          const lines = Array.isArray(value) ? value : [value];
-          lines.forEach(line => {
-            if (typeof line === 'string' && line.trim()) {
-              poolPush(ci, trigger, line.trim());
-              saved++;
-            }
-          });
-        }
+        });
       });
-      pushLog({ ci, trigger:'[전체]', time:Date.now(), line:`[트리거 ${saved}개${diaryCtx?' + 일기':''}]`, fail:null });
+      pushLog({ ci, trigger:'[전체]', time:Date.now(), line:`[트리거 ${saved}개 저장됨]`, fail:null });
     } catch(err) {
       const msg = err.message||'오류';
       if (msg.includes('429') || msg.includes('503')) blockedUntil = Date.now() + 120000;
@@ -1351,7 +1627,7 @@ function runMain() {
         C.hunger=Math.min(100,C.hunger+25);C.happy=Math.min(100,C.happy+3);
         C.care+=3; C.actionCounts.feed++;
         spawnHeart(ci);bounce(ci);aiSpeak(ci,'feed','냠냠! 😋');
-        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+2); recordAction(ci,'feed'); }
+        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+1); recordAction(ci,'feed'); }
         if(C.actionCounts.feed===1) unlock('first_feed');
         if(C.actionCounts.feed>=50) unlock('feed_50');
       }else if(act==='play'){
@@ -1359,7 +1635,7 @@ function runMain() {
         C.happy=Math.min(100,C.happy+20);C.hunger=Math.max(0,C.hunger-6);C.sleep=Math.min(100,C.sleep+8);
         C.care+=4; C.actionCounts.play++;
         spawnHeart(ci);spawnHeart(ci);bounce(ci);aiSpeak(ci,'play','같이 놀아요~ 🎾');
-        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+2); recordAction(ci,'play'); }
+        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+1); recordAction(ci,'play'); }
         if(C.actionCounts.play===1) unlock('first_play');
         if(C.actionCounts.play>=30) unlock('play_30');
       }else if(act==='sleep'){
@@ -1382,7 +1658,7 @@ function runMain() {
         C.happy=Math.min(100,C.happy+15);
         C.care+=2; C.actionCounts.pet++;
         spawnHeart(ci);spawnHeart(ci);spawnHeart(ci);bounce(ci);aiSpeak(ci,'pet','좋아요~ ✨');
-        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+1); recordAction(ci,'pet'); }
+        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+0.5); recordAction(ci,'pet'); }
       }
       checkGrowth(ci);
       updateBars(ci);
@@ -1461,15 +1737,15 @@ function runMain() {
     // ── affinity tick ──
     if (charCount===2) {
       const c0=D.chars[0], c1=D.chars[1];
-      let delta = -0.1; // 자연 감소
+      let delta = -0.3; // 자연 감소 (강화)
       if (c0.hunger<20||c1.hunger<20) delta -= 2;
       if (c0.happy<20 ||c1.happy<20)  delta -= 2;
       if (c0.clean<20 ||c1.clean<20)  delta -= 1;
       if (c0.health<30||c1.health<30) delta -= 3;
-      if (c0.asleep  ||c1.asleep)     delta -= 0.3;
-      // 보너스 — 둘 다 좋은 상태일 때만, 속도 줄임
-      if (c0.happy>=80&&c1.happy>=80) delta += 0.3;
-      if (c0.clean>=80&&c1.clean>=80) delta += 0.15;
+      if (c0.asleep  ||c1.asleep)     delta -= 0.5;
+      // 보너스 — 둘 다 아주 좋은 상태일 때만 소폭
+      if (c0.happy>=80&&c1.happy>=80) delta += 0.1;
+      if (c0.clean>=80&&c1.clean>=80) delta += 0.05;
       D.common.affinity = Math.max(0, Math.min(100, D.common.affinity + delta));
       applyAffinityPositions(false);
       updateHeartGauge();
@@ -1539,7 +1815,7 @@ function runMain() {
     lastAction[ci] = { act, time: Date.now() };
     const other = lastAction[1-ci];
     if (other && other.act===act && Date.now()-other.time<=5000) {
-      D.common.affinity = Math.min(100, D.common.affinity+5); // +3 → +5
+      D.common.affinity = Math.min(100, D.common.affinity+2); // +5 → +2
       spawnInteract('✨');
       updateHeartGauge(); saveD(D); refreshInfoBar();
     }
@@ -1585,7 +1861,7 @@ function runMain() {
       // 😊 가까워지기
       iaCd=true; setTimeout(()=>iaCd=false,25000);
       spawnInteract(['💫','🎵','✨'][Math.floor(Math.random()*3)]);
-      D.common.affinity=Math.min(100,D.common.affinity+4);
+      D.common.affinity=Math.min(100,D.common.affinity+1.5);
       const c0el=document.getElementById('char0'), c1el=document.getElementById('char1');
       c0el.style.left='72px'; c1el.style.left='150px';
       setTimeout(()=>applyAffinityPositions(true),3500);
@@ -1596,7 +1872,7 @@ function runMain() {
       // 😄 같이 점프 + 하트 교환
       iaCd=true; setTimeout(()=>iaCd=false,20000);
       spawnInteract('💕');
-      D.common.affinity=Math.min(100,D.common.affinity+4);
+      D.common.affinity=Math.min(100,D.common.affinity+2);
       bounce(0); setTimeout(()=>bounce(1),150);
       spawnHeart(0); spawnHeart(1);
       aiSpeak(0,'interact',`${C1.name}이랑 있으면 행복해요 💕`);
@@ -1606,7 +1882,7 @@ function runMain() {
       // 💕 베프 — 파티클 폭발
       iaCd=true; setTimeout(()=>iaCd=false,15000);
       spawnInteract('🌟');
-      D.common.affinity=Math.min(100,D.common.affinity+5);
+      D.common.affinity=Math.min(100,D.common.affinity+2);
       spawnConfetti();
       spawnHeart(0); spawnHeart(0); spawnHeart(1); spawnHeart(1);
       bounce(0); setTimeout(()=>bounce(1),80);
@@ -1792,12 +2068,12 @@ function runMain() {
     setTimeout(()=>{
       const FULL_THRESHOLD = 15;
       if (getPoolTotal(0) < FULL_THRESHOLD) {
-        refillPool(0, null, true); // force
+        refillPool(0, true); // force
       }
       if (charCount >= 2) {
         setTimeout(()=>{
           if (getPoolTotal(1) < FULL_THRESHOLD) {
-            refillPool(1, null, true); // force
+            refillPool(1, true); // force
           }
         }, 4000); // 캐릭터1 배치 완료 후 4초 여유
       }
