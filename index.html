@@ -246,16 +246,15 @@
 #add-char-btn:hover{background:rgba(255,249,240,.98);}
 #add-char-btn .plus{font-size:calc(20px * var(--sc));line-height:1;}
 
-/* bubbles */
+/* bubbles — position updated by JS to follow characters */
 .bubble{
   position:absolute;background:#fff;border:2px solid var(--brown);border-radius:calc(10px * var(--sc));
   padding:calc(4px * var(--sc)) calc(8px * var(--sc));font-size:calc(9px * var(--sc));
   opacity:0;transition:opacity .3s;pointer-events:none;z-index:8;
   font-family:'DotGothic16',monospace;
   max-width:calc(104px * var(--sc));white-space:normal;text-align:center;line-height:1.4;
+  transform:translateX(-50%); /* center on anchor point */
 }
-#bub0{left:calc(6px * var(--sc));top:calc(6px * var(--sc));}
-#bub1{right:calc(6px * var(--sc));top:calc(6px * var(--sc));}
 .bubble.show{opacity:1;}
 .bubble.thinking{animation:thinkPulse 1s infinite;}
 .bubble::after{
@@ -629,6 +628,8 @@
 <div id="main-app">
   <div id="titlebar">
     <span id="title-name">🐾 데스크펫</span>
+    <button class="tb-btn" id="btn-screenshot" title="다운로드">📷</button>
+    <button class="tb-btn" id="btn-copy" title="클립보드 복사">📋</button>
     <button class="tb-btn" id="open-settings-btn">⚙ 설정</button>
     <button id="close-btn">✕</button>
   </div>
@@ -1070,8 +1071,11 @@ const TRIGGER_LABELS = {
 
 async function geminiAllTriggers({ apiKey, me, other, relation }) {
   const mood = me.asleep?'잠자는 중':me.hunger<25?'매우 배고픔':me.happy<25?'슬프고 외로움':me.health<30?'몸이 아픔':me.sleep>80?'매우 졸림':me.happy>80?'아주 행복함':me.clean<25?'더럽고 불쾌함':'평온함';
-  const otherTxt = other?`\n같이 있는 친구: "${other.name}"${other.persona?` (${other.persona})`:''}`:'' ;
-  const relTxt   = (relation&&other)?`\n둘의 관계: ${relation}`:'';
+
+  // interact 트리거에만 상대방 정보 포함 — 나머지엔 제외해서 이름이 섞이지 않게
+  const interactCtx = other
+    ? `\n\n"interact" 트리거 한정: 같이 있는 친구 "${other.name}"에게 말을 거는 상황.${relation?` 둘의 관계: ${relation}`:''}`
+    : '';
 
   const triggerList = Object.entries(TRIGGER_LABELS)
     .map(([k,v]) => `"${k}": ${v}`)
@@ -1079,11 +1083,12 @@ async function geminiAllTriggers({ apiKey, me, other, relation }) {
 
   const prompt =
 `너는 "${me.name}"이라는 이름의 귀여운 가상 캐릭터야.
-성격: ${me.persona||'귀엽고 활발함'}${otherTxt}${relTxt}
-현재 상태: ${mood} (나이 ${me.age}일)
+성격: ${me.persona||'귀엽고 활발함'}
+현재 상태: ${mood} (나이 ${me.age}일)${interactCtx}
 
 아래 각 상황에 맞는 짧은 한국어 대사를 서로 다른 느낌으로 3개씩 만들어줘.
 조건: 각 대사는 이모지 1~2개 포함, 20자 이내, 성격에 맞게.
+주의: interact를 제외한 나머지 트리거 대사에는 다른 캐릭터 이름을 절대 넣지 마. 혼잣말 느낌으로.
 
 반드시 아래 JSON 형식으로만 출력해. 각 트리거는 문자열 배열 3개. 다른 텍스트 없이 JSON만:
 {"greeting":["...","...","..."], "feed":["...","...","..."], "play":["...","...","..."], "pet":["...","...","..."], "clean":["...","...","..."], "medicine":["...","...","..."], "wakeup":["...","...","..."], "idle":["...","...","..."], "hungry":["...","...","..."], "sleepy":["...","...","..."], "sick":["...","...","..."], "click":["...","...","..."], "interact":["...","...","..."]}`;
@@ -1348,9 +1353,11 @@ function runMain() {
     charCount=2; D.common.hasChar1=true;
     if (!D.chars[1]) {
       D.chars.push(defChar(1));
-      D.chars[1].stageId = 'baby'; // always start as baby
+      D.chars[1].stageId = 'baby'; // 새 캐릭터만 아기로 시작
     }
-    applyCharScale(1, GROWTH_STAGES[0].scale); // baby size = 60%
+    // 저장된 stageId 기준으로 크기 복원 (기존 캐릭터는 유지)
+    const existingStage = GROWTH_STAGES.find(s=>s.id===D.chars[1].stageId) || GROWTH_STAGES[0];
+    applyCharScale(1, existingStage.scale);
     const c1    = document.getElementById('char1');
     const addBtn= document.getElementById('add-char-btn');
     const tabs  = document.getElementById('panel-tabs');
@@ -1486,6 +1493,110 @@ function runMain() {
   }
   refreshUI();
 
+  // ── screenshot ──
+  async function captureApp() {
+    const app = document.getElementById('main-app');
+    const rect = app.getBoundingClientRect();
+    const dpr  = window.devicePixelRatio || 1;
+    const W = Math.round(rect.width);
+    const H = Math.round(rect.height);
+
+    // 인라인 스타일 수집 (계산된 CSS 포함)
+    const clone = app.cloneNode(true);
+    clone.style.position = 'fixed';
+    clone.style.top = '0';
+    clone.style.left = '0';
+    clone.style.width  = W + 'px';
+    clone.style.height = H + 'px';
+    clone.style.overflow = 'hidden';
+
+    // 계산된 스타일을 인라인으로 적용
+    function applyComputedStyles(src, dst) {
+      const cs = window.getComputedStyle(src);
+      for (const prop of cs) {
+        try { dst.style.setProperty(prop, cs.getPropertyValue(prop)); } catch(e) {}
+      }
+      const srcChildren = src.children;
+      const dstChildren = dst.children;
+      for (let i = 0; i < srcChildren.length; i++) {
+        if (dstChildren[i]) applyComputedStyles(srcChildren[i], dstChildren[i]);
+      }
+    }
+    applyComputedStyles(app, clone);
+
+    // 이미지 src를 dataURL로 변환
+    const imgs = clone.querySelectorAll('img');
+    await Promise.all([...imgs].map(async img => {
+      if (!img.src || img.src.startsWith('data:')) return;
+      try {
+        const res = await fetch(img.src);
+        const blob = await res.blob();
+        img.src = await new Promise(r => {
+          const fr = new FileReader();
+          fr.onload = () => r(fr.result);
+          fr.readAsDataURL(blob);
+        });
+      } catch(e) {}
+    }));
+
+    const html = new XMLSerializer().serializeToString(clone);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
+      <foreignObject width="${W}" height="${H}">
+        <div xmlns="http://www.w3.org/1999/xhtml">${clone.outerHTML}</div>
+      </foreignObject>
+    </svg>`;
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width  = W * dpr;
+        canvas.height = H * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.drawImage(img, 0, 0, W, H);
+        URL.revokeObjectURL(url);
+        resolve(canvas);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  document.getElementById('btn-screenshot').addEventListener('click', async ()=>{
+    const btn = document.getElementById('btn-screenshot');
+    btn.textContent = '⏳';
+    try {
+      const canvas = await captureApp();
+      const a = document.createElement('a');
+      const name = (D.chars[0]?.name||'deskpet').replace(/[^a-zA-Z0-9가-힣]/g,'_');
+      a.download = `deskpet_${name}_${new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } catch(e) { alert('스크린샷 실패: '+e.message); }
+    finally { btn.textContent = '📷'; }
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', async ()=>{
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = '⏳';
+    try {
+      const canvas = await captureApp();
+      canvas.toBlob(async blob=>{
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+        btn.textContent = '✅';
+        setTimeout(()=>btn.textContent='📋', 1500);
+      }, 'image/png');
+    } catch(e) {
+      alert('클립보드 복사 실패: '+e.message);
+      btn.textContent = '📋';
+    }
+  });
+
   // settings opener
   document.getElementById('open-settings-btn').addEventListener('click',()=>{
     saveD(D);
@@ -1546,6 +1657,14 @@ function runMain() {
 
   function showBubble(ci, txt, dur=3200){
     const b=bubEls[ci]; if(!b) return;
+    // position bubble above the correct character
+    const wrap = document.getElementById('char'+ci);
+    if (wrap) {
+      const charLeft  = parseFloat(wrap.style.left) || (ci===0 ? 38*sc() : 184*sc());
+      const charWidth = parseFloat(wrap.style.width) || 78*sc();
+      b.style.left = (charLeft + charWidth/2) + 'px';
+      b.style.top  = (6*sc()) + 'px';
+    }
     b.classList.remove('thinking'); b.textContent=txt; b.classList.add('show');
     clearTimeout(bubTimers[ci]); bubTimers[ci]=setTimeout(()=>b.classList.remove('show'),dur);
   }
