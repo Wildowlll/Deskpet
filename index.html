@@ -1156,13 +1156,16 @@ function runMain() {
   let decayTimer = null;
 
   // ── scale / resize ──
-  function applyScale(sc) {
-    D.common.scale = sc;
-    const [w,h] = POPUP_SIZES[sc]||POPUP_SIZES[1];
-    // CSS 변수로 스케일 — zoom 대신 calc() 사용으로 글자 깨짐 없음
-    document.documentElement.style.setProperty('--sc', sc);
-    document.getElementById('main-app').style.zoom = ''; // zoom 제거
+  function applyScale(sc_val) {
+    D.common.scale = sc_val;
+    const [w,h] = POPUP_SIZES[sc_val]||POPUP_SIZES[1];
+    document.documentElement.style.setProperty('--sc', sc_val);
+    document.getElementById('main-app').style.zoom = '';
     try { window.resizeTo(w, h); } catch(e){}
+    // re-apply slide track width and position
+    const track = document.getElementById('slide-track');
+    if (charCount >= 2) track.style.width=`${600*sc_val}px`;
+    track.style.transform=`translateX(${-300*sc_val*activePanel}px)`;
     saveD(D);
   }
   applyScale(D.common.scale||1.5);
@@ -1359,7 +1362,7 @@ function runMain() {
     addBtn.style.display='none';
     tabs.style.display='flex';
     p1.style.display='';
-    track.style.width='600px';
+    track.style.width=`${600*sc()}px`;
     refreshUI();
     unlock('two_chars');
     applyAffinityPositions(false);
@@ -1410,7 +1413,7 @@ function runMain() {
   // ── slide ──
   function goPanel(idx) {
     activePanel = Math.max(0,Math.min(charCount-1,idx));
-    document.getElementById('slide-track').style.transform=`translateX(${-300*activePanel}px)`;
+    document.getElementById('slide-track').style.transform=`translateX(${-300*sc()*activePanel}px)`;
     document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',i===activePanel));
     refreshInfoBar();
   }
