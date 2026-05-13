@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>🐾 데스크펫</title>
-<script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.1.8/dist/dom-to-image-more.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
 :root{
@@ -253,9 +253,11 @@
   padding:calc(4px * var(--sc)) calc(8px * var(--sc));font-size:calc(9px * var(--sc));
   opacity:0;transition:opacity .3s;pointer-events:none;z-index:8;
   font-family:'DotGothic16',monospace;
-  max-width:calc(104px * var(--sc));white-space:normal;text-align:center;line-height:1.4;
-  transform:translateX(-50%); /* center on anchor point */
+  max-width:calc(110px * var(--sc));white-space:normal;text-align:center;line-height:1.4;
+  top:calc(6px * var(--sc));
 }
+#bub0{ left:calc(6px * var(--sc)); }
+#bub1{ right:calc(6px * var(--sc)); }
 .bubble.show{opacity:1;}
 .bubble.thinking{animation:thinkPulse 1s infinite;}
 .bubble::after{
@@ -631,6 +633,7 @@
     <span id="title-name">🐾 데스크펫</span>
     <button class="tb-btn" id="btn-screenshot" title="다운로드">📷</button>
     <button class="tb-btn" id="btn-copy" title="클립보드 복사">📋</button>
+    <button class="tb-btn" id="btn-fasttime" title="테스트: 10초=1일">⏩</button>
     <button class="tb-btn" id="open-settings-btn">⚙ 설정</button>
     <button id="close-btn">✕</button>
   </div>
@@ -1168,7 +1171,6 @@ function runMain() {
     document.documentElement.style.setProperty('--sc', sc_val);
     document.getElementById('main-app').style.zoom = '';
     try { window.resizeTo(w, h); } catch(e){}
-    // re-apply slide track width and position
     const track = document.getElementById('slide-track');
     if (charCount >= 2) track.style.width=`${600*sc_val}px`;
     track.style.transform=`translateX(${-300*sc_val*activePanel}px)`;
@@ -1411,7 +1413,18 @@ function runMain() {
     const oldSc = D.common.scale, oldPreset = D.common.preset;
     Object.assign(D.common, nd.common);
     nd.chars?.forEach((nc,i)=>{ if(D.chars[i]) Object.assign(D.chars[i],{name:nc.name,persona:nc.persona}); else D.chars[i]=nc; });
-    if (nd.common.scale !== oldSc) applyScale(nd.common.scale);
+    if (nd.common.scale !== oldSc) {
+      applyScale(nd.common.scale);
+      // 캐릭터 크기/위치는 sc() 갱신 후 다음 프레임에 재적용
+      setTimeout(()=>{
+        D.chars.forEach((c,i)=>{
+          if (!c) return;
+          const st = GROWTH_STAGES.find(s=>s.id===(c.stageId||'baby')) || GROWTH_STAGES[0];
+          applyCharScale(i, st.scale);
+        });
+        applyAffinityPositions(false);
+      }, 50);
+    }
     if (nd.common.preset !== oldPreset) resetDecayTimer();
     if (nd.common.hasChar1 && charCount<2) enableChar1(true);
     refreshImages(); refreshUI();
@@ -1496,32 +1509,20 @@ function runMain() {
 
   // ── screenshot ──
   async function captureApp() {
-    const app = document.getElementById('main-app');
-    const rect = app.getBoundingClientRect();
-    const dpr  = window.devicePixelRatio || 1;
-    const W = Math.round(rect.width);
-    const H = Math.round(rect.height);
-
-    const blob = await domtoimage.toBlob(app, {
-      width:  W,
-      height: H,
-      style:  { transform: 'none', zoom: 'normal' },
+    const stage = document.getElementById('stage');
+    const dpr = window.devicePixelRatio || 1;
+    const canvas = await html2canvas(stage, {
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      scale: dpr,
     });
-
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width  = W * dpr;
-        canvas.height = H * dpr;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.drawImage(img, 0, 0, W, H);
-        URL.revokeObjectURL(img.src);
-        resolve(canvas);
-      };
-      img.src = URL.createObjectURL(blob);
-    });
+    // 세로 5px 보정
+    const out = document.createElement('canvas');
+    out.width  = canvas.width;
+    out.height = canvas.height + Math.round(5 * dpr);
+    out.getContext('2d').drawImage(canvas, 0, 0, canvas.width, out.height);
+    return out;
   }
 
   document.getElementById('btn-screenshot').addEventListener('click', async ()=>{
@@ -1553,6 +1554,27 @@ function runMain() {
     } catch(e) {
       alert('클립보드 복사 실패: '+e.message);
       btn.textContent = '📋';
+    }
+  });
+
+  // ── 테스트용 빠른 시간 버튼 ──
+  let fastTimeTimer = null;
+  const btnFast = document.getElementById('btn-fasttime');
+  btnFast.addEventListener('click', ()=>{
+    if (fastTimeTimer) {
+      clearInterval(fastTimeTimer);
+      fastTimeTimer = null;
+      btnFast.textContent = '⏩';
+      btnFast.style.background = '';
+    } else {
+      btnFast.textContent = '⏸';
+      btnFast.style.background = 'rgba(255,100,100,.4)';
+      fastTimeTimer = setInterval(()=>{
+        // 10초마다 playedMs를 1일치만큼 강제 증가
+        const dayMs = DAY_SPEEDS[D.common.daySpeed||'normal'];
+        D.chars.forEach(c=>{ if(c) c.playedMs = (c.playedMs||0) + dayMs; });
+        saveD(D);
+      }, 10000);
     }
   });
 
@@ -1616,14 +1638,6 @@ function runMain() {
 
   function showBubble(ci, txt, dur=3200){
     const b=bubEls[ci]; if(!b) return;
-    // position bubble above the correct character
-    const wrap = document.getElementById('char'+ci);
-    if (wrap) {
-      const charLeft  = parseFloat(wrap.style.left) || (ci===0 ? 38*sc() : 184*sc());
-      const charWidth = parseFloat(wrap.style.width) || 78*sc();
-      b.style.left = (charLeft + charWidth/2) + 'px';
-      b.style.top  = (6*sc()) + 'px';
-    }
     b.classList.remove('thinking'); b.textContent=txt; b.classList.add('show');
     clearTimeout(bubTimers[ci]); bubTimers[ci]=setTimeout(()=>b.classList.remove('show'),dur);
   }
