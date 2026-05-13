@@ -8,6 +8,7 @@
 :root{
   --cream:#fdf6e3;--brown:#4a3728;--brown2:#2a1f18;
   --yellow:#ffd54f;--red:#ef5350;--green:#7bc67e;
+  --sc:1; /* scale factor — changed by JS */
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 
@@ -163,123 +164,98 @@
 
 /* ══ MAIN APP ══ */
 #main-app{
-  display:none;width:300px;
+  display:none;width:calc(300px * var(--sc));
   font-family:'M PLUS Rounded 1c',sans-serif;color:var(--brown);
   background:var(--cream);border:3px solid var(--brown);
-  border-radius:18px;box-shadow:4px 4px 0 var(--brown2);
+  border-radius:calc(18px * var(--sc));box-shadow:4px 4px 0 var(--brown2);
   overflow:hidden;user-select:none;
 }
 
 /* titlebar */
 #titlebar{
   background:var(--brown);color:var(--cream);
-  font-family:'DotGothic16',monospace;font-size:11px;
-  padding:6px 10px;display:flex;align-items:center;gap:5px;
-  border-radius:14px 14px 0 0;
+  font-family:'DotGothic16',monospace;font-size:calc(11px * var(--sc));
+  padding:calc(6px * var(--sc)) calc(10px * var(--sc));
+  display:flex;align-items:center;gap:calc(5px * var(--sc));
+  border-radius:calc(14px * var(--sc)) calc(14px * var(--sc)) 0 0;
 }
-#title-name{flex:1;font-size:12px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#title-name{flex:1;font-size:calc(12px * var(--sc));letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tb-btn{
-  background:rgba(255,255,255,.18);border:none;border-radius:4px;
-  color:var(--cream);font-family:'DotGothic16',monospace;font-size:9px;
-  padding:3px 6px;cursor:pointer;white-space:nowrap;transition:background .1s;flex-shrink:0;
+  background:rgba(255,255,255,.18);border:none;border-radius:calc(4px * var(--sc));
+  color:var(--cream);font-family:'DotGothic16',monospace;font-size:calc(9px * var(--sc));
+  padding:calc(3px * var(--sc)) calc(6px * var(--sc));cursor:pointer;white-space:nowrap;transition:background .1s;flex-shrink:0;
 }
 .tb-btn:hover{background:rgba(255,255,255,.35);}
 #close-btn{
-  background:var(--red);border:none;width:15px;height:15px;border-radius:50%;
-  cursor:pointer;font-size:9px;color:#fff;font-weight:bold;
+  background:var(--red);border:none;
+  width:calc(15px * var(--sc));height:calc(15px * var(--sc));border-radius:50%;
+  cursor:pointer;font-size:calc(9px * var(--sc));color:#fff;font-weight:bold;
   display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .1s;
 }
 #close-btn:hover{transform:scale(1.2);}
 
 /* stage */
 #stage{
-  position:relative;width:100%;height:190px;
-  overflow:hidden;
-  transition:background 8s ease;
+  position:relative;width:100%;height:calc(190px * var(--sc));
+  overflow:hidden;transition:background 8s ease;
 }
-/* sky layer */
-#sky{
-  position:absolute;inset:0;
-  transition:background 8s ease;
-  z-index:0;
-}
-/* ground layer */
+#sky{position:absolute;inset:0;transition:background 8s ease;z-index:0;}
 #ground{
-  position:absolute;bottom:0;left:0;width:100%;height:52px;
-  transition:background 4s ease;
-  z-index:1;
+  position:absolute;bottom:0;left:0;width:100%;height:calc(52px * var(--sc));
+  transition:background 4s ease;z-index:1;
 }
-/* celestial objects (moon/sun) */
 #celestial{
-  position:absolute;top:10px;right:18px;
-  font-size:20px;z-index:2;pointer-events:none;
-  transition:opacity 2s;
+  position:absolute;top:calc(10px * var(--sc));right:calc(18px * var(--sc));
+  font-size:calc(20px * var(--sc));z-index:2;pointer-events:none;transition:opacity 2s;
 }
-/* stars */
-.star{
-  position:absolute;background:white;border-radius:50%;
-  pointer-events:none;z-index:2;
-  animation:twinkle 2s infinite alternate;
-}
+.star{position:absolute;background:white;border-radius:50%;pointer-events:none;z-index:2;animation:twinkle 2s infinite alternate;}
 @keyframes twinkle{0%{opacity:.3}100%{opacity:1}}
-
-/* season particles */
-.season-particle{
-  position:absolute;pointer-events:none;z-index:3;
-  animation:fallDown linear forwards;
-}
-@keyframes fallDown{
-  0%  {transform:translateY(-10px) rotate(0deg);   opacity:1;}
-  100%{transform:translateY(200px) rotate(360deg); opacity:0;}
-}
-
+.season-particle{position:absolute;pointer-events:none;z-index:3;animation:fallDown linear forwards;}
+@keyframes fallDown{0%{transform:translateY(-10px) rotate(0deg);opacity:1;}100%{transform:translateY(200px) rotate(360deg);opacity:0;}}
 .cloud{position:absolute;border-radius:20px;opacity:.85;z-index:3;}
 
 /* char units */
 .char-unit{
-  position:absolute;bottom:16px;width:78px;height:78px;
-  cursor:pointer;
-  transition:left .5s cubic-bezier(.34,1.56,.64,1);
-  z-index:4;
+  position:absolute;bottom:calc(16px * var(--sc));
+  width:calc(78px * var(--sc));height:calc(78px * var(--sc));
+  cursor:pointer;transition:left .5s cubic-bezier(.34,1.56,.64,1);z-index:4;
 }
-#char0{left:38px;}
-#char1{left:184px;}
-.char-img{
-  width:100%;height:100%;object-fit:contain;
-  image-rendering:pixelated;transform-origin:bottom center;display:block;
-}
+#char0{left:calc(38px * var(--sc));}
+#char1{left:calc(184px * var(--sc));}
+.char-img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;transform-origin:bottom center;display:block;}
 .char-placeholder{
   position:absolute;inset:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.82);border:2px dashed var(--brown);border-radius:10px;
-  cursor:pointer;font-family:'DotGothic16',monospace;font-size:8px;
+  background:rgba(255,255,255,.82);border:2px dashed var(--brown);border-radius:calc(10px * var(--sc));
+  cursor:pointer;font-family:'DotGothic16',monospace;font-size:calc(8px * var(--sc));
   color:var(--brown);gap:2px;text-align:center;line-height:1.5;
 }
 .char-placeholder:hover{background:rgba(255,249,240,.95);}
-.char-placeholder .uico{font-size:16px;}
+.char-placeholder .uico{font-size:calc(16px * var(--sc));}
 .ph-input{display:none;}
 
 /* add char btn */
 #add-char-btn{
-  position:absolute;right:10px;bottom:12px;
-  background:rgba(255,255,255,.85);border:2px dashed var(--brown);border-radius:10px;
-  width:68px;height:68px;
+  position:absolute;right:calc(10px * var(--sc));bottom:calc(12px * var(--sc));
+  background:rgba(255,255,255,.85);border:2px dashed var(--brown);border-radius:calc(10px * var(--sc));
+  width:calc(68px * var(--sc));height:calc(68px * var(--sc));
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;cursor:pointer;font-family:'DotGothic16',monospace;font-size:8px;
+  gap:2px;cursor:pointer;font-family:'DotGothic16',monospace;font-size:calc(8px * var(--sc));
   color:var(--brown);transition:background .1s;
 }
 #add-char-btn:hover{background:rgba(255,249,240,.98);}
-#add-char-btn .plus{font-size:20px;line-height:1;}
+#add-char-btn .plus{font-size:calc(20px * var(--sc));line-height:1;}
 
 /* bubbles */
 .bubble{
-  position:absolute;background:#fff;border:2px solid var(--brown);border-radius:10px;
-  padding:4px 8px;font-size:9px;opacity:0;transition:opacity .3s;
-  pointer-events:none;z-index:8;font-family:'DotGothic16',monospace;
-  max-width:104px;white-space:normal;text-align:center;line-height:1.4;
+  position:absolute;background:#fff;border:2px solid var(--brown);border-radius:calc(10px * var(--sc));
+  padding:calc(4px * var(--sc)) calc(8px * var(--sc));font-size:calc(9px * var(--sc));
+  opacity:0;transition:opacity .3s;pointer-events:none;z-index:8;
+  font-family:'DotGothic16',monospace;
+  max-width:calc(104px * var(--sc));white-space:normal;text-align:center;line-height:1.4;
 }
-#bub0{left:6px;top:6px;}
-#bub1{right:6px;top:6px;}
+#bub0{left:calc(6px * var(--sc));top:calc(6px * var(--sc));}
+#bub1{right:calc(6px * var(--sc));top:calc(6px * var(--sc));}
 .bubble.show{opacity:1;}
 .bubble.thinking{animation:thinkPulse 1s infinite;}
 .bubble::after{
@@ -291,13 +267,13 @@
 /* interact */
 .interact-pop{
   position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);
-  font-size:20px;pointer-events:none;z-index:12;
+  font-size:calc(20px * var(--sc));pointer-events:none;z-index:12;
   animation:iPop 1.4s ease-out forwards;
 }
 @keyframes iPop{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}30%{transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-65%) scale(1)}}
-.heart{position:absolute;font-size:14px;pointer-events:none;animation:fHeart 1.2s ease-out forwards;}
+.heart{position:absolute;font-size:calc(14px * var(--sc));pointer-events:none;animation:fHeart 1.2s ease-out forwards;}
 @keyframes fHeart{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-38px) scale(.5)}}
-.zzz{position:absolute;font-family:'DotGothic16',monospace;font-size:12px;color:#9fa8da;pointer-events:none;animation:fZzz 2s ease-out forwards;}
+.zzz{position:absolute;font-family:'DotGothic16',monospace;font-size:calc(12px * var(--sc));color:#9fa8da;pointer-events:none;animation:fZzz 2s ease-out forwards;}
 @keyframes fZzz{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(9px,-26px) scale(1.3)}}
 
 /* panel tabs */
@@ -306,7 +282,8 @@
   background:#fff9f0;
 }
 .ptab{
-  flex:1;padding:5px 0;font-family:'DotGothic16',monospace;font-size:10px;
+  flex:1;padding:calc(5px * var(--sc)) 0;
+  font-family:'DotGothic16',monospace;font-size:calc(10px * var(--sc));
   text-align:center;cursor:pointer;color:var(--brown);opacity:.4;
   border:none;background:none;border-bottom:3px solid transparent;
   margin-bottom:-2px;transition:opacity .15s;
@@ -316,34 +293,36 @@
 /* slide */
 #slide-wrap{overflow:hidden;}
 #slide-track{display:flex;transition:transform .32s cubic-bezier(.4,0,.2,1);}
-.char-panel{flex-shrink:0;width:300px;}
+.char-panel{flex-shrink:0;width:calc(300px * var(--sc));}
 
-/* stats — 5 rows */
-.stats{padding:5px 12px 2px;background:#fff9f0;}
-.stat-row{display:flex;align-items:center;gap:5px;margin-bottom:4px;}
+/* stats */
+.stats{padding:calc(5px * var(--sc)) calc(12px * var(--sc)) calc(2px * var(--sc));background:#fff9f0;}
+.stat-row{display:flex;align-items:center;gap:calc(5px * var(--sc));margin-bottom:calc(4px * var(--sc));}
 .stat-label{
-  font-family:'DotGothic16',monospace;font-size:9px;
-  width:40px;flex-shrink:0;white-space:nowrap;overflow:hidden;
+  font-family:'DotGothic16',monospace;font-size:calc(9px * var(--sc));
+  width:calc(40px * var(--sc));flex-shrink:0;white-space:nowrap;overflow:hidden;
 }
-.stat-bar{flex:1;height:7px;background:#e8dcc8;border-radius:4px;border:1.5px solid var(--brown);overflow:hidden;}
+.stat-bar{flex:1;height:calc(7px * var(--sc));background:#e8dcc8;border-radius:4px;border:1.5px solid var(--brown);overflow:hidden;}
 .stat-fill{height:100%;border-radius:3px;transition:width .5s ease;}
 .fill-hunger{background:linear-gradient(90deg,#ff8a65,#ff5722);}
 .fill-happy{background:linear-gradient(90deg,#ffca28,#ffd54f);}
 .fill-sleep{background:linear-gradient(90deg,#7986cb,#9fa8da);}
 .fill-clean{background:linear-gradient(90deg,#4dd0e1,#00bcd4);}
 .fill-health{background:linear-gradient(90deg,#66bb6a,#81c784);}
-.stat-num{font-family:'DotGothic16',monospace;font-size:9px;width:18px;text-align:right;flex-shrink:0;}
+.stat-num{font-family:'DotGothic16',monospace;font-size:calc(9px * var(--sc));width:calc(18px * var(--sc));text-align:right;flex-shrink:0;}
 @keyframes flash{0%,100%{opacity:1}50%{opacity:.2}}
 .warning{animation:flash .8s infinite;color:var(--red)!important;}
 
 /* actions */
 .actions{
-  padding:5px 10px 6px;border-top:2px solid var(--brown);
-  background:var(--cream);display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+  padding:calc(5px * var(--sc)) calc(10px * var(--sc)) calc(6px * var(--sc));
+  border-top:2px solid var(--brown);background:var(--cream);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:calc(4px * var(--sc));
 }
 .act-btn{
-  background:#fff;border:2px solid var(--brown);border-radius:7px;
-  padding:6px 3px;font-family:'DotGothic16',monospace;font-size:9px;
+  background:#fff;border:2px solid var(--brown);border-radius:calc(7px * var(--sc));
+  padding:calc(6px * var(--sc)) calc(3px * var(--sc));
+  font-family:'DotGothic16',monospace;font-size:calc(9px * var(--sc));
   cursor:pointer;color:var(--brown);text-align:center;line-height:1.4;
   transition:all .1s;box-shadow:2px 2px 0 var(--brown);
 }
@@ -353,12 +332,13 @@
 /* info bar */
 #info-bar{
   display:flex;justify-content:space-between;align-items:center;
-  padding:4px 12px;border-top:2px solid var(--brown);
-  background:#fff9f0;font-family:'DotGothic16',monospace;font-size:10px;
-  min-height:26px;
+  padding:calc(4px * var(--sc)) calc(12px * var(--sc));
+  border-top:2px solid var(--brown);background:#fff9f0;
+  font-family:'DotGothic16',monospace;font-size:calc(10px * var(--sc));
+  min-height:calc(26px * var(--sc));
 }
-#info-mood{font-size:14px;}
-#info-affinity{font-size:10px;opacity:.85;}
+#info-mood{font-size:calc(14px * var(--sc));}
+#info-affinity{font-size:calc(10px * var(--sc));opacity:.85;}
 
 /* ══ SETTINGS PAGE ══ */
 #settings-page{
@@ -765,16 +745,16 @@
       <div class="set-section">
         <span class="set-label">📏 화면 크기</span>
         <div class="size-btns">
-          <button class="sz-btn" data-sc="0.85">소</button>
-          <button class="sz-btn" data-sc="1">중</button>
-          <button class="sz-btn" data-sc="1.25">대</button>
-          <button class="sz-btn active" data-sc="1.5">특대</button>
+          <button class="sz-btn" data-sc="1">소</button>
+          <button class="sz-btn" data-sc="1.25">중</button>
+          <button class="sz-btn active" data-sc="1.5">대</button>
         </div>
       </div>
       <hr class="divider"/>
       <div class="set-section">
         <span class="set-label">⏱ 욕구 감소 속도</span>
         <div class="preset-btns">
+          <button class="ps-btn" data-ps="vslow">🐢<br>매우 느긋</button>
           <button class="ps-btn" data-ps="slow">🌱<br>느긋하게</button>
           <button class="ps-btn active" data-ps="normal">🌿<br>보통</button>
           <button class="ps-btn" data-ps="fast">🔥<br>빡빡하게</button>
@@ -941,10 +921,11 @@ function poolClear(ci){
 }
 
 // popup sizes per scale [w, h]
-const POPUP_SIZES = { 0.85:[262,490], 1:[308,576], 1.25:[385,720], 1.5:[462,864] };
+const POPUP_SIZES = { 1:[308,576], 1.25:[385,720], 1.5:[462,864] };
 
 // decay presets
 const PRESETS = {
+  vslow:  { interval:80000, hunger:0.5, happy:0.4, clean:0.3 },
   slow:   { interval:20000, hunger:1,   happy:0.8, clean:0.5 },
   normal: { interval:13000, hunger:2,   happy:1.5, clean:1   },
   fast:   { interval:9000,  hunger:3,   happy:2,   clean:1.5 },
@@ -1178,10 +1159,13 @@ function runMain() {
   function applyScale(sc) {
     D.common.scale = sc;
     const [w,h] = POPUP_SIZES[sc]||POPUP_SIZES[1];
-    document.getElementById('main-app').style.zoom = sc;
+    // CSS 변수로 스케일 — zoom 대신 calc() 사용으로 글자 깨짐 없음
+    document.documentElement.style.setProperty('--sc', sc);
+    document.getElementById('main-app').style.zoom = ''; // zoom 제거
     try { window.resizeTo(w, h); } catch(e){}
+    saveD(D);
   }
-  applyScale(D.common.scale||1);
+  applyScale(D.common.scale||1.5);
 
   // ── decay timer ──
   function resetDecayTimer() {
@@ -1192,7 +1176,11 @@ function runMain() {
   resetDecayTimer();
 
   // ── day speed (age calculation) ──
-  // ── playtime tracking (age only counts while app is open) ──
+  // migrate old scale values
+  if (!D.common.scale || D.common.scale < 1) D.common.scale = 1.5;
+
+  // scale helper for JS pixel calculations
+  const sc = () => D.common.scale || 1.5;
   const sessionStart = Date.now();
 
   function calcAge(ci) {
@@ -1261,8 +1249,7 @@ function runMain() {
   }
 
   function applyCharScale(ci, scale) {
-    const img = document.getElementById('img'+ci);
-    const base = 78;
+    const base = 78 * sc();
     const sz = Math.round(base * scale);
     const wrap = document.getElementById('char'+ci);
     wrap.style.transition = 'width .8s, height .8s';
@@ -1279,14 +1266,14 @@ function runMain() {
 
   // ── confetti ──
   function spawnConfetti() {
-    const stage = document.getElementById('stage');
+    const s=sc(), stageEl = document.getElementById('stage');
     const colors = ['#ffd54f','#ff8a65','#7bc67e','#9fa8da','#ff8fb1','#4dd0e1'];
     for (let i=0;i<28;i++) {
       setTimeout(()=>{
         const c = document.createElement('div');
         c.className = 'confetti';
-        c.style.cssText = `left:${Math.random()*280}px;top:${Math.random()*40}px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${0.8+Math.random()*1}s;`;
-        stage.appendChild(c);
+        c.style.cssText = `left:${Math.random()*280*s}px;top:${Math.random()*40*s}px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${0.8+Math.random()*1}s;`;
+        stageEl.appendChild(c);
         setTimeout(()=>c.remove(), 2000);
       }, i*40);
     }
@@ -1367,8 +1354,8 @@ function runMain() {
     const p1    = document.getElementById('panel1');
     const track = document.getElementById('slide-track');
     c1.style.display='block';
-    document.getElementById('char0').style.left='38px';
-    document.getElementById('char1').style.left='184px';
+    document.getElementById('char0').style.left=`${38*sc()}px`;
+    document.getElementById('char1').style.left=`${184*sc()}px`;
     addBtn.style.display='none';
     tabs.style.display='flex';
     p1.style.display='';
@@ -1617,15 +1604,15 @@ function runMain() {
   // ── particles ──
   const stage=document.getElementById('stage');
   function spawnHeart(ci){
-    const h=document.createElement('div'); h.className='heart';
+    const s=sc(), h=document.createElement('div'); h.className='heart';
     h.textContent=['❤️','💛','💚','💜','🧡'][Math.floor(Math.random()*5)];
-    const x=ci===0?8+Math.random()*90:162+Math.random()*90;
-    h.style.cssText=`left:${x}px;top:${12+Math.random()*80}px`;
+    const x=ci===0?(8+Math.random()*90)*s:(162+Math.random()*90)*s;
+    h.style.cssText=`left:${x}px;top:${(12+Math.random()*80)*s}px`;
     stage.appendChild(h); setTimeout(()=>h.remove(),1300);
   }
   function spawnZzz(ci){
-    const z=document.createElement('div'); z.className='zzz'; z.textContent='z';
-    z.style.cssText=`left:${ci===0?58:216}px;top:28px`;
+    const s=sc(), z=document.createElement('div'); z.className='zzz'; z.textContent='z';
+    z.style.cssText=`left:${(ci===0?58:216)*s}px;top:${28*s}px`;
     stage.appendChild(z); setTimeout(()=>z.remove(),2100);
   }
   function spawnInteract(emoji){
@@ -1797,12 +1784,12 @@ function runMain() {
   // stage width 300px, char width ~78px
   // 호감도 높을수록 가까워짐 (left값이 서로 좁아짐)
   function getAffinityPositions(affinity) {
-    // stage 300px, char 78px → 대칭 기준: l1 = 222 - l0
-    if (affinity <= 20) return [8,   214];  // 😒 양 끝 (서먹)
-    if (affinity <= 40) return [22,  200];  // 🙂 조금 떨어짐
-    if (affinity <= 60) return [38,  184];  // 😊 중간
-    if (affinity <= 80) return [55,  167];  // 😄 가까이
-    return [72, 150];                        // 💕 바짝 붙음
+    const s = sc();
+    if (affinity <= 20) return [8*s,   214*s];
+    if (affinity <= 40) return [22*s,  200*s];
+    if (affinity <= 60) return [38*s,  184*s];
+    if (affinity <= 80) return [55*s,  167*s];
+    return [72*s, 150*s];
   }
 
   function applyAffinityPositions(animate=true) {
@@ -1902,7 +1889,7 @@ function runMain() {
       spawnInteract(['💫','🎵','✨'][Math.floor(Math.random()*3)]);
       D.common.affinity=Math.min(100,D.common.affinity+1.5);
       const c0el=document.getElementById('char0'), c1el=document.getElementById('char1');
-      c0el.style.left='72px'; c1el.style.left='150px';
+      c0el.style.left=`${72*sc()}px`; c1el.style.left=`${150*sc()}px`;
       setTimeout(()=>applyAffinityPositions(true),3500);
       aiSpeak(0,'interact',`${C1.name}이랑 있으면 좋아요 💕`);
       setTimeout(()=>aiSpeak(1,'interact',`${C0.name}이랑 같이 있어서 행복해요 ✨`),2600);
@@ -2024,11 +2011,12 @@ function runMain() {
     // stars
     bgStarEls.forEach(s=>s.remove());
     bgStarEls = [];
+    const s2=sc();
     for (let i=0; i<tTheme.stars; i++) {
       const s = document.createElement('div');
       s.className = 'star';
-      const sz = 1.5 + Math.random()*2;
-      s.style.cssText = `width:${sz}px;height:${sz}px;top:${5+Math.random()*70}px;left:${Math.random()*260}px;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s;`;
+      const sz = (1.5 + Math.random()*2)*s2;
+      s.style.cssText = `width:${sz}px;height:${sz}px;top:${(5+Math.random()*70)*s2}px;left:${Math.random()*260*s2}px;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s;`;
       stage.appendChild(s);
       bgStarEls.push(s);
     }
@@ -2044,11 +2032,11 @@ function runMain() {
   }
 
   function spawnSeasonParticle(emoji) {
-    const p = document.createElement('div');
+    const s=sc(), p = document.createElement('div');
     p.className = 'season-particle';
     p.textContent = emoji;
     const dur = 3 + Math.random()*3;
-    p.style.cssText = `left:${Math.random()*290}px;top:-10px;font-size:${10+Math.random()*8}px;animation-duration:${dur}s;`;
+    p.style.cssText = `left:${Math.random()*290*s}px;top:-10px;font-size:${(10+Math.random()*8)*s}px;animation-duration:${dur}s;`;
     stage.appendChild(p);
     setTimeout(()=>p.remove(), dur*1000+200);
   }
@@ -2059,18 +2047,18 @@ function runMain() {
 
   // ── clouds ──
   function addCloud(){
-    const now = new Date();
+    const s=sc(), now = new Date();
     const tod = getTimeOfDay(now.getHours());
     const cloudColors = {
       dawn:'rgba(255,220,180,.85)', day:'rgba(255,255,255,.88)',
       dusk:'rgba(255,180,120,.8)', evening:'rgba(100,120,200,.6)', night:'rgba(60,70,130,.5)',
     };
     const c=document.createElement('div'); c.className='cloud';
-    const cw=Math.random()*55+32, ch=Math.random()*8+5;
-    c.style.cssText=`width:${cw}px;height:${ch}px;top:${Math.random()*55+4}px;left:-${cw}px;background:${cloudColors[tod]};border-radius:20px;`;
+    const cw=(Math.random()*55+32)*s, ch=(Math.random()*8+5)*s;
+    c.style.cssText=`width:${cw}px;height:${ch}px;top:${(Math.random()*55+4)*s}px;left:-${cw}px;background:${cloudColors[tod]};border-radius:20px;`;
     const dur=Math.random()*14+11; c.style.transition=`left ${dur}s linear`;
     stage.appendChild(c);
-    requestAnimationFrame(()=>{c.style.left=(300+cw+10)+'px';});
+    requestAnimationFrame(()=>{c.style.left=(300*s+cw+10)+'px';});
     setTimeout(()=>c.remove(),(dur+1)*1000);
   }
   addCloud();addCloud();setInterval(addCloud,7000);
@@ -2215,10 +2203,11 @@ function runSettings(){
 
   // size buttons
   document.querySelectorAll('.sz-btn').forEach(b=>{
-    b.classList.toggle('active',parseFloat(b.dataset.sc)===(D.common.scale||1));
+    b.classList.toggle('active', parseFloat(b.dataset.sc)===(D.common.scale||1.5));
     b.addEventListener('click',()=>{
       document.querySelectorAll('.sz-btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active'); D.common.scale=parseFloat(b.dataset.sc);
+      b.classList.add('active');
+      D.common.scale = parseFloat(b.dataset.sc); // store for save-common
     });
   });
 
@@ -2345,6 +2334,7 @@ function runSettings(){
     if (!fresh.common) fresh.common = defCommon();
     fresh.common.apiKey            = document.getElementById('set-apikey').value.trim();
     fresh.common.relation          = document.getElementById('set-relation').value.trim();
+    fresh.common.scale             = D.common.scale; // set by sz-btn click
     fresh.common.daySpeed          = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
     fresh.common.notifyOn          = notifyOnEl.checked;
     fresh.common.notifyThreshold   = parseInt(threshEl.value);
