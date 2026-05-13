@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>🐾 데스크펫</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
 :root{
@@ -1496,72 +1497,11 @@ function runMain() {
   // ── screenshot ──
   async function captureApp() {
     const app = document.getElementById('main-app');
-    const rect = app.getBoundingClientRect();
-    const dpr  = window.devicePixelRatio || 1;
-    const W = Math.round(rect.width);
-    const H = Math.round(rect.height);
-
-    // 인라인 스타일 수집 (계산된 CSS 포함)
-    const clone = app.cloneNode(true);
-    clone.style.position = 'fixed';
-    clone.style.top = '0';
-    clone.style.left = '0';
-    clone.style.width  = W + 'px';
-    clone.style.height = H + 'px';
-    clone.style.overflow = 'hidden';
-
-    // 계산된 스타일을 인라인으로 적용
-    function applyComputedStyles(src, dst) {
-      const cs = window.getComputedStyle(src);
-      for (const prop of cs) {
-        try { dst.style.setProperty(prop, cs.getPropertyValue(prop)); } catch(e) {}
-      }
-      const srcChildren = src.children;
-      const dstChildren = dst.children;
-      for (let i = 0; i < srcChildren.length; i++) {
-        if (dstChildren[i]) applyComputedStyles(srcChildren[i], dstChildren[i]);
-      }
-    }
-    applyComputedStyles(app, clone);
-
-    // 이미지 src를 dataURL로 변환
-    const imgs = clone.querySelectorAll('img');
-    await Promise.all([...imgs].map(async img => {
-      if (!img.src || img.src.startsWith('data:')) return;
-      try {
-        const res = await fetch(img.src);
-        const blob = await res.blob();
-        img.src = await new Promise(r => {
-          const fr = new FileReader();
-          fr.onload = () => r(fr.result);
-          fr.readAsDataURL(blob);
-        });
-      } catch(e) {}
-    }));
-
-    const html = new XMLSerializer().serializeToString(clone);
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-      <foreignObject width="${W}" height="${H}">
-        <div xmlns="http://www.w3.org/1999/xhtml">${clone.outerHTML}</div>
-      </foreignObject>
-    </svg>`;
-
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width  = W * dpr;
-        canvas.height = H * dpr;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.drawImage(img, 0, 0, W, H);
-        URL.revokeObjectURL(url);
-        resolve(canvas);
-      };
-      img.onerror = reject;
-      img.src = url;
+    return await html2canvas(app, {
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#fdf6e3',
+      scale: window.devicePixelRatio || 1,
     });
   }
 
