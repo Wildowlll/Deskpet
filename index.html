@@ -2337,7 +2337,8 @@ function runSettings(){
     if (!fresh.common) fresh.common = defCommon();
     fresh.common.apiKey            = document.getElementById('set-apikey').value.trim();
     fresh.common.relation          = document.getElementById('set-relation').value.trim();
-    fresh.common.scale             = D.common.scale; // set by sz-btn click
+    fresh.common.scale             = D.common.scale;
+    fresh.common.preset            = D.common.preset; // 욕구 감소 속도
     fresh.common.daySpeed          = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
     fresh.common.notifyOn          = notifyOnEl.checked;
     fresh.common.notifyThreshold   = parseInt(threshEl.value);
