@@ -242,8 +242,8 @@
   transition:left .5s cubic-bezier(.34,1.56,.64,1);
   z-index:4;
 }
-#char0{left:36px;}
-#char1{left:186px;}
+#char0{left:38px;}
+#char1{left:184px;}
 .char-img{
   width:100%;height:100%;object-fit:contain;
   image-rendering:pixelated;transform-origin:bottom center;display:block;
@@ -1023,7 +1023,7 @@ function saveLog(l){ try { localStorage.setItem(LOG_KEY, JSON.stringify(l.slice(
 function defChar(i){ return {
   name:i===0?'캐릭터1':'캐릭터2', persona:'',
   hunger:80, happy:80, sleep:20, clean:80, health:100,
-  asleep:false, born:Date.now(), age:0,
+  asleep:false, playedMs:0, age:0,
   care:0,          // care score for growth
   stageId:'baby',  // current growth stage
   actionCounts: { feed:0, play:0, clean:0, medicine:0, pet:0 },
@@ -1160,6 +1160,14 @@ function runMain() {
   if (!D.chars)  D.chars  = [defChar(0)];
   if (!D.common) D.common = defCommon();
   D.chars.forEach((c,i)=>{ const d=defChar(i); Object.keys(d).forEach(k=>{ if(c[k]===undefined) c[k]=d[k]; }); });
+  // migrate old saves: convert born → playedMs
+  D.chars.forEach(c=>{
+    if (c.born && !c.playedMs) {
+      c.playedMs = Date.now() - c.born; // treat elapsed as played
+      delete c.born;
+    }
+    if (c.playedMs === undefined) c.playedMs = 0;
+  });
   if (D.common.affinity===undefined) D.common.affinity=50;
 
   let charCount = 1;
@@ -1184,9 +1192,23 @@ function runMain() {
   resetDecayTimer();
 
   // ── day speed (age calculation) ──
-  function calcAge(born) {
-    return Math.floor((Date.now() - born) / (DAY_SPEEDS[D.common.daySpeed||'normal']));
+  // ── playtime tracking (age only counts while app is open) ──
+  const sessionStart = Date.now();
+
+  function calcAge(ci) {
+    const C = D.chars[ci];
+    if (!C) return 0;
+    if (C.playedMs === undefined) C.playedMs = 0; // migrate old saves
+    const totalMs = C.playedMs + (Date.now() - sessionStart);
+    return Math.floor(totalMs / (DAY_SPEEDS[D.common.daySpeed||'normal']));
   }
+
+  // save accumulated playtime on page unload
+  window.addEventListener('beforeunload', ()=>{
+    const elapsed = Date.now() - sessionStart;
+    D.chars.forEach(C=>{ if(C) C.playedMs = (C.playedMs||0) + elapsed; });
+    saveD(D);
+  });
 
   // ── achievement unlock ──
   // use a session Set so banners never re-fire after reload
@@ -1345,8 +1367,8 @@ function runMain() {
     const p1    = document.getElementById('panel1');
     const track = document.getElementById('slide-track');
     c1.style.display='block';
-    document.getElementById('char0').style.left='36px';
-    document.getElementById('char1').style.left='186px';
+    document.getElementById('char0').style.left='38px';
+    document.getElementById('char1').style.left='184px';
     addBtn.style.display='none';
     tabs.style.display='flex';
     p1.style.display='';
@@ -1723,7 +1745,7 @@ function runMain() {
       else if(C.happy<20&&!C.asleep) aiSpeak(ci,'idle','심심해요 😢');
       else if(C.clean<20&&!C.asleep) aiSpeak(ci,'idle','씻고 싶어요... 🛁');
       else if(C.health<25)           aiSpeak(ci,'sick','몸이 안 좋아요 💊');
-      C.age = calcAge(C.born);
+      C.age = calcAge(ci);
       // health streak — track by day, not by tick
       if (C.health >= 100) {
         const today = C.age;
@@ -1775,11 +1797,12 @@ function runMain() {
   // stage width 300px, char width ~78px
   // 호감도 높을수록 가까워짐 (left값이 서로 좁아짐)
   function getAffinityPositions(affinity) {
-    if (affinity <= 20) return [8,  214];  // 😒 양 끝 (서먹)
-    if (affinity <= 40) return [22, 196];  // 🙂 조금 떨어짐
-    if (affinity <= 60) return [38, 178];  // 😊 중간
-    if (affinity <= 80) return [55, 158];  // 😄 가까이
-    return [72, 140];                       // 💕 바짝 붙음
+    // stage 300px, char 78px → 대칭 기준: l1 = 222 - l0
+    if (affinity <= 20) return [8,   214];  // 😒 양 끝 (서먹)
+    if (affinity <= 40) return [22,  200];  // 🙂 조금 떨어짐
+    if (affinity <= 60) return [38,  184];  // 😊 중간
+    if (affinity <= 80) return [55,  167];  // 😄 가까이
+    return [72, 150];                        // 💕 바짝 붙음
   }
 
   function applyAffinityPositions(animate=true) {
@@ -2318,30 +2341,39 @@ function runSettings(){
 
   // save common — now includes notification settings
   document.getElementById('btn-save-common').addEventListener('click',()=>{
-    D.common.apiKey            = document.getElementById('set-apikey').value.trim();
-    D.common.relation          = document.getElementById('set-relation').value.trim();
-    D.common.daySpeed          = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
-    D.common.notifyOn          = notifyOnEl.checked;
-    D.common.notifyThreshold   = parseInt(threshEl.value);
-    D.common.notifyIntervalMin = parseInt(intervalEl.value);
-    D.common.notifyStats = {
+    const fresh = loadD();
+    if (!fresh.common) fresh.common = defCommon();
+    fresh.common.apiKey            = document.getElementById('set-apikey').value.trim();
+    fresh.common.relation          = document.getElementById('set-relation').value.trim();
+    fresh.common.daySpeed          = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
+    fresh.common.notifyOn          = notifyOnEl.checked;
+    fresh.common.notifyThreshold   = parseInt(threshEl.value);
+    fresh.common.notifyIntervalMin = parseInt(intervalEl.value);
+    fresh.common.notifyStats = {
       hunger: document.getElementById('nstat-hunger').checked,
       happy:  document.getElementById('nstat-happy').checked,
       clean:  document.getElementById('nstat-clean').checked,
       health: document.getElementById('nstat-health').checked,
     };
-    saveD(D);notifySettings();flash('btn-save-common');
+    // sync local D.common
+    Object.assign(D.common, fresh.common);
+    saveD(fresh); notifySettings(); flash('btn-save-common');
   });
 
-  // save chars — clear pool if persona changed
+  // save chars — clear pool if persona changed, never overwrite game state
   [0,1].forEach(i=>{
     document.getElementById('btn-save'+i).addEventListener('click',()=>{
-      if(!D.chars[i])D.chars[i]=defChar(i);
-      const newPersona=document.getElementById('set-persona'+i).value.trim();
-      if(newPersona !== D.chars[i].persona) poolClear(i); // persona changed → reset pool
-      D.chars[i].name   =document.getElementById('set-name'+i).value.trim()||defChar(i).name;
-      D.chars[i].persona=newPersona;
-      saveD(D);notifySettings();flash('btn-save'+i);
+      // load fresh data from storage to avoid overwriting game state
+      const fresh = loadD();
+      if (!fresh.chars) fresh.chars = [defChar(0), defChar(1)];
+      if (!fresh.chars[i]) fresh.chars[i] = defChar(i);
+      const newPersona = document.getElementById('set-persona'+i).value.trim();
+      if(newPersona !== fresh.chars[i].persona) poolClear(i);
+      fresh.chars[i].name    = document.getElementById('set-name'+i).value.trim()||defChar(i).name;
+      fresh.chars[i].persona = newPersona;
+      // sync D.chars name/persona for local reference
+      if (D.chars[i]) { D.chars[i].name=fresh.chars[i].name; D.chars[i].persona=fresh.chars[i].persona; }
+      saveD(fresh); notifySettings(); flash('btn-save'+i);
     });
   });
 
