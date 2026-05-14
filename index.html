@@ -1196,9 +1196,11 @@ function runMain() {
   function calcAge(ci) {
     const C = D.chars[ci];
     if (!C) return 0;
-    if (C.playedMs === undefined) C.playedMs = 0; // migrate old saves
+    if (C.playedMs === undefined) C.playedMs = 0;
     const totalMs = C.playedMs + (Date.now() - sessionStart);
-    return Math.floor(totalMs / (DAY_SPEEDS[D.common.daySpeed||'normal']));
+    const dayMs = DAY_SPEEDS[D.common.daySpeed||'normal'];
+    // ageOffset: 날짜 속도 변경 전까지 쌓인 나이 보존
+    return (C.ageOffset||0) + Math.floor(totalMs / dayMs);
   }
 
   // save accumulated playtime on page unload
@@ -2406,8 +2408,20 @@ function runSettings(){
     fresh.common.apiKey            = document.getElementById('set-apikey').value.trim();
     fresh.common.relation          = document.getElementById('set-relation').value.trim();
     fresh.common.scale             = D.common.scale;
-    fresh.common.preset            = D.common.preset; // 욕구 감소 속도
-    fresh.common.daySpeed          = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
+    fresh.common.preset            = D.common.preset;
+    const newDaySpeed = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
+    // 날짜 속도가 바뀌면 현재 나이를 ageOffset에 고정하고 playedMs 리셋
+    if (newDaySpeed !== (fresh.common.daySpeed||'normal')) {
+      const elapsed = Date.now() - sessionStart;
+      fresh.chars?.forEach((c,i)=>{
+        if (!c) return;
+        const totalMs = (c.playedMs||0) + elapsed;
+        const oldDayMs = DAY_SPEEDS[fresh.common.daySpeed||'normal'];
+        c.ageOffset = (c.ageOffset||0) + Math.floor(totalMs / oldDayMs);
+        c.playedMs = 0;
+      });
+    }
+    fresh.common.daySpeed          = newDaySpeed;
     fresh.common.notifyOn          = notifyOnEl.checked;
     fresh.common.notifyThreshold   = parseInt(threshEl.value);
     fresh.common.notifyIntervalMin = parseInt(intervalEl.value);
@@ -2417,7 +2431,6 @@ function runSettings(){
       clean:  document.getElementById('nstat-clean').checked,
       health: document.getElementById('nstat-health').checked,
     };
-    // sync local D.common
     Object.assign(D.common, fresh.common);
     saveD(fresh); notifySettings(); flash('btn-save-common');
   });
