@@ -633,7 +633,6 @@
     <span id="title-name">🐾 데스크펫</span>
     <button class="tb-btn" id="btn-screenshot" title="다운로드">📷</button>
     <button class="tb-btn" id="btn-copy" title="클립보드 복사">📋</button>
-    <!--<button class="tb-btn" id="btn-fasttime" title="테스트: 10초=1일">⏩</button>-->
     <button class="tb-btn" id="open-settings-btn">⚙ 설정</button>
     <button id="close-btn">✕</button>
   </div>
@@ -770,8 +769,8 @@
         <span class="set-label">📅 날짜 속도 <small>(실제 시간 기준 하루)</small></span>
         <div class="preset-btns" id="dayspeed-btns">
           <button class="ps-btn" data-ds="slow">🐌<br>24시간</button>
-          <button class="ps-btn" data-ds="normal">🌿<br>1시간</button>
-          <button class="ps-btn" data-ds="fast">⚡<br>30분</button>
+          <button class="ps-btn" data-ds="normal">🌿<br>4시간</button>
+          <button class="ps-btn" data-ds="fast">⚡<br>1시간</button>
         </div>
       </div>
       <hr class="divider"/>
@@ -939,8 +938,8 @@ const PRESETS = {
 // day speed: real ms per in-game day
 const DAY_SPEEDS = {
   slow:   86400000, // 24h
-  normal:  3600000, // 1h  ← default
-  fast:    1800000, // 30m
+  normal:  14400000, // 4h
+  fast:    3600000, // 1h
 };
 
 // growth stages: { id, label, emoji, minAge(days), minCare, scale }
@@ -961,11 +960,11 @@ function getStage(age, care) {
 
 // affinity labels
 const AFFINITY_LABELS = [
-  [0,  '😒 서먹서먹',   '서로 어색하고 말이 없음'],
-  [21, '🙂 아는 사이',  '가끔 말 걸지만 아직 서먹함'],
-  [41, '😊 친구',       '편하게 지내는 사이'],
-  [61, '😄 친한 친구',  '서로 잘 챙겨주고 자주 이야기함'],
-  [81, '💕 베스트프렌드','뭐든 같이하고 싶은 단짝'],
+  [0,   '😒 서먹서먹',   '서로 어색하고 말이 없음'],
+  [200, '🙂 아는 사이',  '가끔 말 걸지만 아직 서먹함'],
+  [400, '😊 친구',       '편하게 지내는 사이'],
+  [600, '😄 친한 친구',  '서로 잘 챙겨주고 자주 이야기함'],
+  [800, '💕 베스트프렌드','뭐든 같이하고 싶은 단짝'],
 ];
 function getAffinityLabel(v) {
   let r = AFFINITY_LABELS[0];
@@ -992,8 +991,8 @@ const ACHIEVEMENTS = [
   { id:'grow_teen',     emoji:'🌿', name:'쑥쑥',          desc:'청소년으로 성장했어요' },
   { id:'grow_adult',    emoji:'🌳', name:'다 컸어요',      desc:'어른이 됐어요' },
   { id:'two_chars',     emoji:'👫', name:'첫 친구',       desc:'캐릭터를 2마리로 늘렸어요' },
-  { id:'affinity_80',   emoji:'💕', name:'단짝',          desc:'호감도 80을 달성했어요' },
-  { id:'affinity_100',  emoji:'💯', name:'베프',          desc:'호감도 100을 달성했어요' },
+  { id:'affinity_80',   emoji:'💕', name:'단짝',          desc:'호감도 800을 달성했어요' },
+  { id:'affinity_100',  emoji:'💯', name:'베프',          desc:'호감도 1000을 달성했어요' },
   { id:'night_owl',     emoji:'🌙', name:'올빼미',        desc:'자정~새벽 4시에 접속했어요' },
 ];
 
@@ -1557,27 +1556,6 @@ function runMain() {
     }
   });
 
-  // ── 테스트용 빠른 시간 버튼 ──
-  /*let fastTimeTimer = null;
-  const btnFast = document.getElementById('btn-fasttime');
-  btnFast.addEventListener('click', ()=>{
-    if (fastTimeTimer) {
-      clearInterval(fastTimeTimer);
-      fastTimeTimer = null;
-      btnFast.textContent = '⏩';
-      btnFast.style.background = '';
-    } else {
-      btnFast.textContent = '⏸';
-      btnFast.style.background = 'rgba(255,100,100,.4)';
-      fastTimeTimer = setInterval(()=>{
-        // 10초마다 playedMs를 1일치만큼 강제 증가
-        const dayMs = DAY_SPEEDS[D.common.daySpeed||'normal'];
-        D.chars.forEach(c=>{ if(c) c.playedMs = (c.playedMs||0) + dayMs; });
-        saveD(D);
-      }, 10000);
-    }
-  });*/
-
   // settings opener
   document.getElementById('open-settings-btn').addEventListener('click',()=>{
     saveD(D);
@@ -1747,7 +1725,7 @@ function runMain() {
         C.hunger=Math.min(100,C.hunger+25);C.happy=Math.min(100,C.happy+3);
         C.care+=3; C.actionCounts.feed++;
         spawnHeart(ci);bounce(ci);aiSpeak(ci,'feed','냠냠! 😋');
-        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+1); recordAction(ci,'feed'); }
+        if(charCount===2){ D.common.affinity=Math.min(1000,D.common.affinity+1); recordAction(ci,'feed'); }
         if(C.actionCounts.feed===1) unlock('first_feed');
         if(C.actionCounts.feed>=50) unlock('feed_50');
       }else if(act==='play'){
@@ -1755,7 +1733,7 @@ function runMain() {
         C.happy=Math.min(100,C.happy+20);C.hunger=Math.max(0,C.hunger-6);C.sleep=Math.min(100,C.sleep+8);
         C.care+=4; C.actionCounts.play++;
         spawnHeart(ci);spawnHeart(ci);bounce(ci);aiSpeak(ci,'play','같이 놀아요~ 🎾');
-        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+1); recordAction(ci,'play'); }
+        if(charCount===2){ D.common.affinity=Math.min(1000,D.common.affinity+1); recordAction(ci,'play'); }
         if(C.actionCounts.play===1) unlock('first_play');
         if(C.actionCounts.play>=30) unlock('play_30');
       }else if(act==='sleep'){
@@ -1778,7 +1756,7 @@ function runMain() {
         C.happy=Math.min(100,C.happy+15);
         C.care+=2; C.actionCounts.pet++;
         spawnHeart(ci);spawnHeart(ci);spawnHeart(ci);bounce(ci);aiSpeak(ci,'pet','좋아요~ ✨');
-        if(charCount===2){ D.common.affinity=Math.min(100,D.common.affinity+0.5); recordAction(ci,'pet'); }
+        if(charCount===2){ D.common.affinity=Math.min(1000,D.common.affinity+0.5); recordAction(ci,'pet'); }
       }
       checkGrowth(ci);
       updateBars(ci);
@@ -1847,8 +1825,8 @@ function runMain() {
       if(C.age>=100) unlock('day_100');
       // affinity achievements
       if(charCount===2){
-        if(D.common.affinity>=80)  unlock('affinity_80');
-        if(D.common.affinity>=100) unlock('affinity_100');
+        if(D.common.affinity>=800)  unlock('affinity_80');
+        if(D.common.affinity>=1000) unlock('affinity_100');
       }
       // growth check
       checkGrowth(ci);
@@ -1866,11 +1844,11 @@ function runMain() {
       // 보너스 — 둘 다 아주 좋은 상태일 때만 소폭
       if (c0.happy>=80&&c1.happy>=80) delta += 0.1;
       if (c0.clean>=80&&c1.clean>=80) delta += 0.05;
-      D.common.affinity = Math.max(0, Math.min(100, D.common.affinity + delta));
+      D.common.affinity = Math.max(0, Math.min(1000, D.common.affinity + delta));
       applyAffinityPositions(false);
       updateHeartGauge();
-      if(D.common.affinity>=80)  unlock('affinity_80');
-      if(D.common.affinity>=100) unlock('affinity_100');
+      if(D.common.affinity>=800)  unlock('affinity_80');
+      if(D.common.affinity>=1000) unlock('affinity_100');
     }
     saveD(D); refreshInfoBar();
   }
@@ -1880,10 +1858,10 @@ function runMain() {
   // 호감도 높을수록 가까워짐 (left값이 서로 좁아짐)
   function getAffinityPositions(affinity) {
     const s = sc();
-    if (affinity <= 20) return [8*s,   214*s];
-    if (affinity <= 40) return [22*s,  200*s];
-    if (affinity <= 60) return [38*s,  184*s];
-    if (affinity <= 80) return [55*s,  167*s];
+    if (affinity <= 200) return [8*s,   214*s];
+    if (affinity <= 400) return [22*s,  200*s];
+    if (affinity <= 600) return [38*s,  184*s];
+    if (affinity <= 800) return [55*s,  167*s];
     return [72*s, 150*s];
   }
 
@@ -1901,13 +1879,11 @@ function runMain() {
     }
     c0.style.left = l0 + 'px';
     c1.style.left = l1 + 'px';
-    // 서먹서먹(0~20)이면 img0 좌우 반전 (등 돌리기)
+    // 서먹서먹(0~200)이면 img0 좌우 반전 (등 돌리기)
     const img0 = document.getElementById('img0');
-    const img1 = document.getElementById('img1');
-    if (D.common.affinity <= 20) {
+    if (D.common.affinity <= 200) {
       img0.style.transform = (img0.style.transform||'').replace(' scaleX(-1)','') + ' scaleX(-1)';
     } else {
-      // 반전 해제 (bounce scaleX는 그대로 유지)
       img0.style.transform = (img0.style.transform||'').replace(' scaleX(-1)','');
     }
   }
@@ -1916,7 +1892,7 @@ function runMain() {
     const gauge = document.getElementById('heart-gauge');
     if (charCount < 2) { gauge.classList.remove('show'); return; }
     gauge.classList.add('show');
-    const filled = Math.round((D.common.affinity / 100) * 5);
+    const filled = Math.round((D.common.affinity / 1000) * 5);
     for (let i = 0; i < 5; i++) {
       const el = document.getElementById('hg' + i);
       if (!el) continue;
@@ -1936,7 +1912,7 @@ function runMain() {
     lastAction[ci] = { act, time: Date.now() };
     const other = lastAction[1-ci];
     if (other && other.act===act && Date.now()-other.time<=5000) {
-      D.common.affinity = Math.min(100, D.common.affinity+2); // +5 → +2
+      D.common.affinity = Math.min(1000, D.common.affinity+2); // +5 → +2
       spawnInteract('✨');
       updateHeartGauge(); saveD(D); refreshInfoBar();
     }
@@ -1963,13 +1939,13 @@ function runMain() {
       spawnInteract('💊'); aiSpeak(0,'interact',`${C1.name}아, 괜찮아? 💊`); return;
     }
 
-    if (aff <= 20) {
+    if (aff <= 200) {
       // 😒 서먹 — 어색한 반응
       iaCd=true; setTimeout(()=>iaCd=false,25000);
       showBubble(0,['...','으...어색해','흠...'][Math.floor(Math.random()*3)]);
       setTimeout(()=>showBubble(1,['...','뭐야...','어색하다'][Math.floor(Math.random()*3)]),1200);
 
-    } else if (aff <= 40) {
+    } else if (aff <= 400) {
       // 🙂 슬쩍 쳐다보다 고개 돌리기
       iaCd=true; setTimeout(()=>iaCd=false,25000);
       spawnInteract('👀');
@@ -1978,22 +1954,22 @@ function runMain() {
       c0el.style.left=(l0+10)+'px'; c1el.style.left=(l1-10)+'px';
       setTimeout(()=>applyAffinityPositions(true),1600);
 
-    } else if (aff <= 60) {
+    } else if (aff <= 600) {
       // 😊 가까워지기
       iaCd=true; setTimeout(()=>iaCd=false,25000);
       spawnInteract(['💫','🎵','✨'][Math.floor(Math.random()*3)]);
-      D.common.affinity=Math.min(100,D.common.affinity+1.5);
+      D.common.affinity=Math.min(1000,D.common.affinity+1.5);
       const c0el=document.getElementById('char0'), c1el=document.getElementById('char1');
       c0el.style.left=`${72*sc()}px`; c1el.style.left=`${150*sc()}px`;
       setTimeout(()=>applyAffinityPositions(true),3500);
       aiSpeak(0,'interact',`${C1.name}이랑 있으면 좋아요 💕`);
       setTimeout(()=>aiSpeak(1,'interact',`${C0.name}이랑 같이 있어서 행복해요 ✨`),2600);
 
-    } else if (aff <= 80) {
+    } else if (aff <= 800) {
       // 😄 같이 점프 + 하트 교환
       iaCd=true; setTimeout(()=>iaCd=false,20000);
       spawnInteract('💕');
-      D.common.affinity=Math.min(100,D.common.affinity+2);
+      D.common.affinity=Math.min(1000,D.common.affinity+2);
       bounce(0); setTimeout(()=>bounce(1),150);
       spawnHeart(0); spawnHeart(1);
       aiSpeak(0,'interact',`${C1.name}이랑 있으면 행복해요 💕`);
@@ -2003,7 +1979,7 @@ function runMain() {
       // 💕 베프 — 파티클 폭발
       iaCd=true; setTimeout(()=>iaCd=false,15000);
       spawnInteract('🌟');
-      D.common.affinity=Math.min(100,D.common.affinity+2);
+      D.common.affinity=Math.min(1000,D.common.affinity+2);
       spawnConfetti();
       spawnHeart(0); spawnHeart(0); spawnHeart(1); spawnHeart(1);
       bounce(0); setTimeout(()=>bounce(1),80);
