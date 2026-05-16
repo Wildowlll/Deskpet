@@ -332,6 +332,33 @@
 .act-btn:active{transform:translate(2px,2px);box-shadow:none;}
 
 /* info bar */
+/* special event actions */
+#special-actions{
+  display:none;
+  grid-template-columns:repeat(3,1fr);
+  gap:calc(4px * var(--sc));
+  padding:calc(4px * var(--sc)) calc(10px * var(--sc)) calc(5px * var(--sc));
+  border-top:2px dashed var(--brown);
+  background:var(--cream);
+}
+.sact-btn{
+  background:linear-gradient(135deg,#fff9f0,#fff0f5);
+  border:2px solid var(--brown);
+  border-radius:calc(7px * var(--sc));
+  padding:calc(6px * var(--sc)) calc(3px * var(--sc));
+  font-family:'DotGothic16',monospace;font-size:calc(9px * var(--sc));
+  cursor:pointer;color:var(--brown);text-align:center;line-height:1.4;
+  transition:all .1s;box-shadow:2px 2px 0 var(--brown);
+}
+.sact-btn:hover:not(.locked):not(.cooldown){background:linear-gradient(135deg,#ffe0f0,#fff0b0);}
+.sact-btn:active:not(.locked):not(.cooldown){transform:translate(2px,2px);box-shadow:none;}
+.sact-btn.locked{opacity:.4;cursor:not-allowed;filter:grayscale(.4);}
+.sact-btn.cooldown{opacity:.6;cursor:not-allowed;}
+.sact-cd{
+  display:block;font-size:calc(7px * var(--sc));
+  opacity:.7;margin-top:2px;
+}
+
 #info-bar{
   display:flex;justify-content:space-between;align-items:center;
   padding:calc(4px * var(--sc)) calc(12px * var(--sc));
@@ -489,7 +516,7 @@
   <div id="hero">
     <div class="logo">🐾</div>
     <h1>데스크펫</h1>
-    <p class="tagline">나만의 캐릭터를 키워요.<br>팝업 창을 띄워놓고 작업하면서 함께해요!</p>
+    <p class="tagline">나만의 캐릭터를 키우는 웹 다마고치.<br>팝업 창을 띄워놓고 작업하면서 함께해요!</p>
     <button id="launch-btn">🐾 시작하기</button>
     <div id="hint">팝업 차단이 뜨면 주소창에서 허용해주세요</div>
   </div>
@@ -698,6 +725,12 @@
       </div>
 
     </div>
+  </div>
+
+  <div id="special-actions" style="display:none">
+    <button class="sact-btn locked" id="btn-gift">🎁<br>선물하기</button>
+    <button class="sact-btn locked" id="btn-kiss">💋<br>뽀뽀</button>
+    <button class="sact-btn locked" id="btn-date">🌸<br>데이트</button>
   </div>
 
   <div id="info-bar">
@@ -1049,6 +1082,7 @@ const TRIGGER_LABELS = {
   greeting:'첫 인사', feed:'밥 먹음', play:'같이 놀기', pet:'쓰다듬기',
   clean:'목욕', medicine:'약 먹음', wakeup:'잠에서 깸', idle:'혼잣말',
   hungry:'배고픔 호소', sleepy:'졸림', sick:'아픔', click:'클릭 반응', interact:'친구에게 말걸기',
+  gift:'선물 주고받기', kiss:'뽀뽀함', date:'데이트 중',
 };
 
 async function geminiAllTriggers({ apiKey, me, other, relation }) {
@@ -1073,7 +1107,7 @@ async function geminiAllTriggers({ apiKey, me, other, relation }) {
 주의: interact를 제외한 나머지 트리거 대사에는 다른 캐릭터 이름을 절대 넣지 마. 혼잣말 느낌으로.
 
 반드시 아래 JSON 형식으로만 출력해. 각 트리거는 문자열 배열 3개. 다른 텍스트 없이 JSON만:
-{"greeting":["...","...","..."], "feed":["...","...","..."], "play":["...","...","..."], "pet":["...","...","..."], "clean":["...","...","..."], "medicine":["...","...","..."], "wakeup":["...","...","..."], "idle":["...","...","..."], "hungry":["...","...","..."], "sleepy":["...","...","..."], "sick":["...","...","..."], "click":["...","...","..."], "interact":["...","...","..."]}`;
+{"greeting":["...","...","..."], "feed":["...","...","..."], "play":["...","...","..."], "pet":["...","...","..."], "clean":["...","...","..."], "medicine":["...","...","..."], "wakeup":["...","...","..."], "idle":["...","...","..."], "hungry":["...","...","..."], "sleepy":["...","...","..."], "sick":["...","...","..."], "click":["...","...","..."], "interact":["...","...","..."], "gift":["...","...","..."], "kiss":["...","...","..."], "date":["...","...","..."]}`;
 
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     { method:'POST', headers:{'Content-Type':'application/json'},
@@ -1355,6 +1389,7 @@ function runMain() {
     track.style.width=`${600*sc()}px`;
     refreshUI();
     unlock('two_chars');
+    document.getElementById('special-actions').style.display = 'grid';
     applyAffinityPositions(false);
     updateHeartGauge();
     if(!silent){
@@ -1390,9 +1425,16 @@ function runMain() {
     lastTs = ts;
     const nd = loadD();
     if (!nd.common) return;
-    const oldSc = D.common.scale, oldPreset = D.common.preset;
+    const oldSc = D.common.scale, oldPreset = D.common.preset, oldDaySpeed = D.common.daySpeed;
     Object.assign(D.common, nd.common);
-    nd.chars?.forEach((nc,i)=>{ if(D.chars[i]) Object.assign(D.chars[i],{name:nc.name,persona:nc.persona}); else D.chars[i]=nc; });
+    nd.chars?.forEach((nc,i)=>{
+      if(D.chars[i]) Object.assign(D.chars[i],{name:nc.name,persona:nc.persona});
+      else D.chars[i]=nc;
+    });
+    // chars 전체 데이터 동기화 (ageOffset, playedMs 포함)
+    if (nd.common.daySpeed !== oldDaySpeed) {
+      nd.chars?.forEach((nc,i)=>{ if(D.chars[i] && nc) { D.chars[i].ageOffset=nc.ageOffset||0; D.chars[i].playedMs=nc.playedMs||0; }});
+    }
     if (nd.common.scale !== oldSc) {
       applyScale(nd.common.scale);
       // 캐릭터 크기/위치는 sc() 갱신 후 다음 프레임에 재적용
@@ -1481,6 +1523,7 @@ function runMain() {
     if(charCount===2){
       const [, lbl] = getAffinityLabel(D.common.affinity);
       document.getElementById('info-affinity').textContent=`${lbl} ${Math.round(D.common.affinity)}`;
+      updateSpecialBtns();
     } else {
       document.getElementById('info-affinity').textContent=D.chars[0]?.name||'';
     }
@@ -1537,6 +1580,171 @@ function runMain() {
     }
   });
 
+  // ── 특별 이벤트 버튼 잠금/해제 ──
+  const SPECIAL_NEEDS = { gift:400, kiss:600, date:800 };
+  // 쿨타임 localStorage에서 복원
+  const _cd = JSON.parse(localStorage.getItem('deskpet_special_cd')||'{}');
+  const specialCdUntil = {
+    gift: _cd.gift||0,
+    kiss: _cd.kiss||0,
+    date: _cd.date||0,
+  };
+  function saveSpecialCd() {
+    localStorage.setItem('deskpet_special_cd', JSON.stringify(specialCdUntil));
+  }
+
+  function updateSpecialBtns() {
+    if (charCount < 2) return;
+    const aff = D.common.affinity;
+    const now = Date.now();
+    Object.entries(SPECIAL_NEEDS).forEach(([key, need])=>{
+      const btn = document.getElementById('btn-'+key);
+      if (!btn) return;
+      // 쿨다운 숫자 제거
+      const old = btn.querySelector('.sact-cd');
+      if (old) old.remove();
+
+      if (aff < need) {
+        btn.classList.add('locked');
+        btn.classList.remove('cooldown');
+        btn.title = `호감도 ${need} 이상 필요해요`;
+      } else if (now < specialCdUntil[key]) {
+        btn.classList.remove('locked');
+        btn.classList.add('cooldown');
+        const remain = Math.ceil((specialCdUntil[key]-now)/60000);
+        const cd = document.createElement('span');
+        cd.className = 'sact-cd';
+        cd.textContent = `${remain}분 후`;
+        btn.appendChild(cd);
+      } else {
+        btn.classList.remove('locked','cooldown');
+        btn.title = '';
+      }
+    });
+  }
+
+  // 쿨다운 표시 갱신 (30초마다)
+  setInterval(updateSpecialBtns, 30000);
+
+  // ── 특별 이벤트 버튼 ──
+  ['gift','kiss','date'].forEach(key=>{
+    document.getElementById('btn-'+key).addEventListener('click',()=>{
+      const btn = document.getElementById('btn-'+key);
+      if (btn.classList.contains('locked') || btn.classList.contains('cooldown')) return;
+      if (key==='gift') doGift();
+      if (key==='kiss') doKiss();
+      if (key==='date') doDate();
+    });
+  });
+
+  // 선물하기
+  function doGift() {
+    specialCdUntil.gift = Date.now() + 30*60*1000;
+    saveSpecialCd();
+    D.common.affinity = Math.min(1000, D.common.affinity+30);
+    D.chars[0].happy  = Math.min(100, D.chars[0].happy+15);
+    D.chars[1].happy  = Math.min(100, D.chars[1].happy+15);
+    // 연출 — 살짝 가까이
+    const s = sc();
+    const c0 = document.getElementById('char0');
+    const c1 = document.getElementById('char1');
+    c0.style.transition = 'left .6s cubic-bezier(.34,1.56,.64,1)';
+    c1.style.transition = 'left .6s cubic-bezier(.34,1.56,.64,1)';
+    const [l0,l1] = getAffinityPositions(D.common.affinity);
+    c0.style.left = (l0 - 10*s) + 'px';
+    c1.style.left = (l1 + 10*s) + 'px';
+    spawnInteract('🎁');
+    spawnHeart(0); spawnHeart(1); spawnHeart(0);
+    setTimeout(()=>applyAffinityPositions(true), 2500);
+    aiSpeak(0,'gift','선물이에요! 받아줘요 🎁');
+    setTimeout(()=>aiSpeak(1,'gift','고마워요! 기뻐요 🎁'), 2000);
+    updateHeartGauge(); updateBars(0); updateBars(1);
+    saveD(D); refreshInfoBar();
+  }
+
+  // 뽀뽀
+  function doKiss() {
+    specialCdUntil.kiss = Date.now() + 10*60*1000;
+    saveSpecialCd();
+    D.common.affinity = Math.min(1000, D.common.affinity+50);
+    D.chars[0].happy  = Math.min(100, D.chars[0].happy+20);
+    D.chars[1].happy  = Math.min(100, D.chars[1].happy+20);
+    // 연출 — 중앙으로 바짝
+    const s = sc();
+    const c0 = document.getElementById('char0');
+    const c1 = document.getElementById('char1');
+    c0.style.transition = 'left .6s cubic-bezier(.34,1.56,.64,1)';
+    c1.style.transition = 'left .6s cubic-bezier(.34,1.56,.64,1)';
+    c0.style.left = (111*s) + 'px';
+    c1.style.left = (133*s) + 'px';
+    setTimeout(()=>{
+      spawnInteract('💋');
+      spawnHeart(0); spawnHeart(0); spawnHeart(1); spawnHeart(1); spawnHeart(0);
+      spawnConfetti();
+    }, 650);
+    setTimeout(()=>applyAffinityPositions(true), 3200);
+    aiSpeak(0,'kiss','💋 ...부끄러워요');
+    setTimeout(()=>aiSpeak(1,'kiss','💋 ...행복해요'), 2200);
+    updateHeartGauge(); updateBars(0); updateBars(1);
+    saveD(D); refreshInfoBar();
+  }
+
+  // 데이트
+  const DATE_THEMES = [
+    { sky:'linear-gradient(180deg,#42a5f5 0%,#90caf9 55%,#e3f2fd 100%)', ground:'linear-gradient(180deg,#a5d6a7 0%,#66bb6a 100%)', name:'봄 소풍 🌸' },
+    { sky:'linear-gradient(180deg,#7e57c2 0%,#ef6c00 45%,#ffb74d 100%)', ground:'linear-gradient(180deg,#bf8040 0%,#8d5524 100%)', name:'노을 데이트 🌇' },
+    { sky:'linear-gradient(180deg,#0d0d1a 0%,#0d1b3e 60%,#1a237e 100%)', ground:'linear-gradient(180deg,#e8eaf6 0%,#c5cae9 100%)', name:'별 보러 가기 🌙' },
+  ];
+  let dateTimer = null;
+
+  function doDate() {
+    if (dateTimer) { showBubble(activePanel,'이미 데이트 중이에요 🌸'); return; }
+    specialCdUntil.date = Date.now() + 30*60*1000;
+    saveSpecialCd();
+    D.common.affinity = Math.min(1000, D.common.affinity+80);
+
+    const theme = DATE_THEMES[Math.floor(Math.random()*DATE_THEMES.length)];
+    document.getElementById('sky').style.background    = theme.sky;
+    document.getElementById('ground').style.background = theme.ground;
+
+    const banner = document.getElementById('growth-banner');
+    banner.innerHTML = `🌸 ${theme.name} 중...`;
+    banner.classList.add('show');
+
+    // 캐릭터 가까이
+    const s = sc();
+    const c0 = document.getElementById('char0');
+    const c1 = document.getElementById('char1');
+    c0.style.transition = 'left .8s cubic-bezier(.34,1.56,.64,1)';
+    c1.style.transition = 'left .8s cubic-bezier(.34,1.56,.64,1)';
+    c0.style.left = (100*s) + 'px';
+    c1.style.left = (142*s) + 'px';
+    spawnHeart(0); spawnHeart(1); spawnHeart(0); spawnHeart(1);
+    aiSpeak(0,'date',`${D.chars[1].name}이랑 데이트 중이에요 🌸`);
+    setTimeout(()=>aiSpeak(1,'date',`${D.chars[0].name}이랑 있으면 시간이 빨리 가요 💕`), 2400);
+
+    // 데이트 중 버튼 비활성화
+    document.querySelectorAll('.act-btn, .sact-btn').forEach(b=>{
+      b.disabled = true; b.style.opacity='0.4'; b.style.cursor='not-allowed';
+    });
+
+    // 30초 후 원복
+    dateTimer = setTimeout(()=>{
+      banner.classList.remove('show');
+      applyAffinityPositions(true);
+      applyBackground();
+      dateTimer = null;
+      // 버튼 다시 활성화
+      document.querySelectorAll('.act-btn, .sact-btn').forEach(b=>{
+        b.disabled = false; b.style.opacity=''; b.style.cursor='';
+      });
+      updateSpecialBtns();
+    }, 10000);
+
+    updateHeartGauge(); updateBars(0); updateBars(1);
+    saveD(D); refreshInfoBar();
+  }
+
   // settings opener
   document.getElementById('open-settings-btn').addEventListener('click',()=>{
     saveD(D);
@@ -1551,7 +1759,7 @@ function runMain() {
   const bubTimers=[null,null];
 
   // ALL triggers use pool — no real-time API calls
-  const ALL_TRIGGERS = ['idle','click','hungry','sleepy','sick','feed','play','pet','clean','medicine','wakeup','greeting','interact'];
+  const ALL_TRIGGERS = ['idle','click','hungry','sleepy','sick','feed','play','pet','clean','medicine','wakeup','greeting','interact','gift','kiss','date'];
 
   // batch rate limiter: max 5 batch calls/min
   const BATCH_LOG = [];
@@ -1589,6 +1797,9 @@ function runMain() {
     wakeup:   ['잘 잤어요~ ☀️','좋은 아침이에요! 😊','일어났어요~'],
     greeting: ['안녕하세요~ 😊','반가워요! 🎉','오늘도 잘 부탁해요~'],
     interact: ['같이 있으니 좋아요 💕','행복해요 ✨','친구가 있어서 다행이에요~'],
+    gift:     ['선물이에요! 받아줘요 🎁','고마워요! 기뻐요 🎁','소중히 할게요 💛'],
+    kiss:     ['💋 ...부끄러워요','두근두근해요 💕','...행복해요 💋'],
+    date:     ['데이트 너무 좋아요 🌸','같이 있고 싶어요 💕','행복한 시간이에요 ✨'],
   };
   function randFallback(trigger) {
     const arr = FALLBACKS[trigger] || FALLBACKS.idle;
@@ -2391,10 +2602,9 @@ function runSettings(){
     const newDaySpeed = document.querySelector('.ps-btn[data-ds].active')?.dataset.ds || 'normal';
     // 날짜 속도가 바뀌면 현재 나이를 ageOffset에 고정하고 playedMs 리셋
     if (newDaySpeed !== (fresh.common.daySpeed||'normal')) {
-      const elapsed = Date.now() - sessionStart;
-      fresh.chars?.forEach((c,i)=>{
+      fresh.chars?.forEach((c)=>{
         if (!c) return;
-        const totalMs = (c.playedMs||0) + elapsed;
+        const totalMs = c.playedMs||0;
         const oldDayMs = DAY_SPEEDS[fresh.common.daySpeed||'normal'];
         c.ageOffset = (c.ageOffset||0) + Math.floor(totalMs / oldDayMs);
         c.playedMs = 0;
