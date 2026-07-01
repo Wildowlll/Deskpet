@@ -828,6 +828,15 @@
           </div>
         </div>
       </div>
+      <hr class="divider"/>
+      <div class="set-section">
+        <span class="set-label">💬 대사 지속 시간: <span id="bubble-dur-val">3초</span></span>
+        <input type="range" id="set-bubble-dur" min="1" max="10" step="1" value="3"
+          style="width:100%;margin-top:6px;accent-color:var(--brown);"/>
+        <div style="font-family:'DotGothic16',monospace;font-size:9px;opacity:.55;margin-top:3px;">
+          ← 1초 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 다음 대사까지 →
+        </div>
+      </div>
       <button class="set-save" id="btn-save-common">💾 저장</button>
     </div>
 
@@ -1033,6 +1042,7 @@ function defCommon(){ return {
   notifyStats:{ hunger:true, happy:false, clean:false, health:true },
   notifyIntervalMin:10,
   daySpeed:'normal',        // key into DAY_SPEEDS
+  bubbleDur: 3,             // 말풍선 지속 시간 (초, 0 = 무한)
   achievements:[],          // array of unlocked achievement ids
   lastDiaryDay:[-1,-1],     // [char0 lastDay, char1 lastDay]
 }; }
@@ -1808,8 +1818,15 @@ function runMain() {
 
   function showBubble(ci, txt, dur=3200){
     const b=bubEls[ci]; if(!b) return;
+    // 설정값 적용 (10 = 무한, 타이머 없음)
+    const setting = D.common.bubbleDur ?? 3;
+    const actualDur = setting >= 10 ? null : setting * 1000;
     b.classList.remove('thinking'); b.textContent=txt; b.classList.add('show');
-    clearTimeout(bubTimers[ci]); bubTimers[ci]=setTimeout(()=>b.classList.remove('show'),dur);
+    clearTimeout(bubTimers[ci]);
+    if (actualDur !== null) {
+      bubTimers[ci] = setTimeout(()=>b.classList.remove('show'), actualDur);
+    }
+    // dur 파라미터는 무시 (설정값 우선)
   }
 
   function pushLog(entry){
@@ -2557,6 +2574,17 @@ function runSettings(){
   const threshValEl   = document.getElementById('threshold-val');
   const intervalEl    = document.getElementById('set-notify-interval');
   const intervalValEl = document.getElementById('interval-val');
+  const bubDurEl      = document.getElementById('set-bubble-dur');
+  const bubDurValEl   = document.getElementById('bubble-dur-val');
+
+  // 말풍선 지속 시간 슬라이더 초기값
+  const savedDur = D.common.bubbleDur ?? 3;
+  bubDurEl.value = savedDur;
+  bubDurValEl.textContent = savedDur >= 10 ? '다음 대사까지' : `${savedDur}초`;
+  bubDurEl.addEventListener('input', ()=>{
+    const v = parseInt(bubDurEl.value);
+    bubDurValEl.textContent = v >= 10 ? '다음 대사까지' : `${v}초`;
+  });
   const permWarn      = document.getElementById('notify-perm-warn');
 
   // restore saved values
@@ -2611,6 +2639,7 @@ function runSettings(){
       });
     }
     fresh.common.daySpeed          = newDaySpeed;
+    fresh.common.bubbleDur         = parseInt(bubDurEl.value);
     fresh.common.notifyOn          = notifyOnEl.checked;
     fresh.common.notifyThreshold   = parseInt(threshEl.value);
     fresh.common.notifyIntervalMin = parseInt(intervalEl.value);
